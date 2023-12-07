@@ -1,0 +1,7 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "darkHighlightTheme": "github-dark",
+  "entryPoints": ["./src/index.ts"],
+  "lightHighlightTheme": "github-light",
+  "includeVersion": true
+}

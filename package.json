@@ -1,0 +1,42 @@
+{
+  "author": "Dario Sechi",
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.38.3",
+    "@types/node": "^20.9.0",
+    "@vitest/coverage-v8": "^0.34.6",
+    "@vitest/ui": "^0.34.6",
+    "esbuild": "^0.19.5",
+    "glob": "^10.3.10",
+    "prettier": "^3.1.0",
+    "tslib": "^2.6.2",
+    "typedoc": "^0.24.8",
+    "typescript": "^5.2.2",
+    "vitest": "^0.34.6"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=8"
+  },
+  "exports": {
+    "import": "./index.js",
+    "require": "./index.cjs",
+    "types": "./index.d.ts"
+  },
+  "license": "MIT",
+  "main": "index.cjs",
+  "module": "index.js",
+  "name": "@aracna/fcm",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "repository": "https://github.com/aracna/fcm",
+  "scripts": {
+    "build": "rm -rf dist && node esbuild.mjs && pnpm tsc && pnpm api-extractor run --local",
+    "prepublish": "pnpm test && pnpm build && pnpm version patch && cp LICENSE package.json README.md dist",
+    "test": "vitest run"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "types": "index.d.ts",
+  "version": "1.1.61"
+}
