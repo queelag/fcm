@@ -11,8 +11,8 @@
 
 # Aracna FCM
 
-This library contains a collection of functions, modules and utilities to make your development experience smoother.
+This library is a more recent and robust version of the [push-receiver](https://github.com/MatthieuLemoine/push-receiver) library, which is no longer maintained.
 
 ### Documentation
 
-You can find the fcm documentation on the [Aracna Website](https://aracna.dariosechi.it).
+You can find the FCM documentation on the [Aracna Website](https://aracna.dariosechi.it).
