@@ -16,7 +16,7 @@ build({
   format: 'esm',
   outdir: 'dist',
   packages: 'external',
-  platform: 'neutral'
+  platform: 'node'
 }).catch(() => process.exit(1))
 
 /**
@@ -29,19 +29,5 @@ build({
   format: 'cjs',
   outfile: 'dist/index.cjs',
   packages: 'external',
-  platform: 'neutral'
-}).catch(() => process.exit(1))
-
-/**
- * IIFE
- */
-build({
-  ...OPTIONS,
-  bundle: true,
-  entryPoints: ['src/index.ts'],
-  format: 'iife',
-  globalName: 'AracnaFCM',
-  outfile: 'dist/index.iife.js',
-  platform: 'browser',
-  treeShaking: true
+  platform: 'node'
 }).catch(() => process.exit(1))
