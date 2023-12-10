@@ -1,5 +1,5 @@
 export * from './classes/fcm-client.js'
+export { Notification } from './definitions/interfaces.js'
 export * from './functions/subscribe-to-fcm.js'
-export { AndroidCheckinResponse } from './protos/checkin.js'
 export * from './requests/acg-requests.js'
 export * from './requests/fcm-requests.js'

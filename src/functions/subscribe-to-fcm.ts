@@ -1,7 +1,7 @@
 import { FetchError } from '@aracna/core'
 import { FCMAPIDefinitions } from '../definitions/fcm-api-definitions.js'
-import { FCMSubscription } from '../definitions/interfaces.js'
-import { AndroidCheckinResponse, FCMSubscribeRequest } from '../index.js'
+import { ACGCheckinResponse, FCMSubscription } from '../definitions/interfaces.js'
+import { FCMSubscribeRequest } from '../index.js'
 import { ACGCheckinRequest, ACGRegisterRequest } from '../requests/acg-requests.js'
 
 export async function subscribeToFCM(
@@ -12,7 +12,7 @@ export async function subscribeToFCM(
   acgID?: bigint,
   acgSecurityToken?: bigint
 ): Promise<FCMSubscription | Error> {
-  let checkin: AndroidCheckinResponse | FetchError,
+  let checkin: ACGCheckinResponse | FetchError,
     token: string | FetchError,
     fcm: FCMAPIDefinitions.SubscribeResponseData | FetchError,
     subscription: FCMSubscription
@@ -20,7 +20,7 @@ export async function subscribeToFCM(
   checkin = await ACGCheckinRequest(acgID, acgSecurityToken)
   if (checkin instanceof Error) return checkin
 
-  token = await ACGRegisterRequest(appID, checkin.androidId, checkin.securityToken)
+  token = await ACGRegisterRequest(appID, checkin.android_id, checkin.security_token)
   if (token instanceof Error) return token
 
   fcm = await FCMSubscribeRequest(senderID, token, key, auth)
@@ -28,8 +28,8 @@ export async function subscribeToFCM(
 
   subscription = {
     acg: {
-      id: checkin.androidId,
-      securityToken: checkin.securityToken
+      id: checkin.android_id,
+      securityToken: checkin.security_token
     },
     token: fcm.token
   }

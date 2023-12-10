@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 package checkin_proto;
 
-import "android_checkin.proto";
+import "android-checkin.proto";
 
 // A concrete name/value pair sent to the device's Gservices database.
 message GservicesSetting {

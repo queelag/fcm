@@ -1,5 +1,11 @@
-import { HeartbeatAck, LoginResponse } from '../protos/mcs.js'
 import { MCSState, MCSTag } from './enums.js'
+import { Checkin } from './proto/checkin.js'
+import { MCS } from './proto/mcs.js'
+
+export interface ACGCheckinResponse extends Omit<Checkin.AndroidCheckinResponse, 'android_id' | 'security_token'> {
+  android_id: bigint
+  security_token: bigint
+}
 
 export interface FCMClientACG {
   id: bigint
@@ -13,8 +19,8 @@ export interface FCMClientCrypto {
 
 export interface FCMClientData {
   cursor: number
-  heartbeat?: HeartbeatAck
-  login?: LoginResponse
+  heartbeat?: MCS.HeartbeatAck
+  login?: MCS.LoginResponse
   size: {
     expected: number
     packets: number
@@ -31,4 +37,10 @@ export interface FCMSubscription {
     securityToken: bigint
   }
   token: string
+}
+
+export interface Notification<T extends object = object> {
+  from: string
+  notification: T
+  priority: string
 }

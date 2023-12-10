@@ -1,3 +1,5 @@
+import protobuf, { Root } from 'protobufjs'
+
 export const ACG_REGISTER_CHROME_VERSION: string = '87.0.4280.66'
 
 export const ACG_REGISTER_SENDER: number[] = [
@@ -9,9 +11,11 @@ export const ACG_REGISTER_SENDER: number[] = [
 export const MTALK_GOOGLE_HOST: string = 'mtalk.google.com'
 export const MTALK_GOOGLE_PORT: number = 5228
 
-export const MCS_HEARTBEAT_PING_TIMEOUT_MS: number = 10000
+export const MCS_HEARTBEAT_PING_TIMEOUT_MS: number = 2000
 export const MCS_SIZE_PACKET_MAX_LENGTH: number = 5
 export const MCS_SIZE_PACKET_MIN_LENGTH: number = 1
 export const MCS_TAG_PACKET_LENGTH: number = 1
 export const MCS_VERSION: number = 41
 export const MCS_VERSION_PACKET_LENGTH: number = 1
+
+export const PROTOBUF_ROOT: Root = new protobuf.Root()

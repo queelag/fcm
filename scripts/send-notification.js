@@ -9,8 +9,8 @@ await fetch('https://fcm.googleapis.com/fcm/send', {
   body: JSON.stringify({
     to: FCM_CLIENT_TOKEN,
     notification: {
-      title: 'Hello world',
-      body: 'Test'
+      title: 'Title',
+      body: 'Body'
     }
   }),
   headers: {
