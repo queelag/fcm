@@ -1,24 +1,15 @@
-import { CoreClassLogger, CoreModuleLogger, generateRandomString } from '@aracna/core'
-import { beforeAll, describe, test } from 'vitest'
-import { ACGCheckin } from '../../src/functions/acg-checkin'
-import { ACGRegister } from '../../src/functions/acg-register'
-import { AndroidCheckinResponse } from '../../src/proto/checkin'
+import { generateRandomString } from '@aracna/core'
+import { describe, test } from 'vitest'
+import { ACGCheckinResponse } from '../../src/definitions/interfaces'
+import { ACGCheckinRequest, ACGRegisterRequest } from '../../src/requests/acg-requests'
 
 describe(() => {
-  beforeAll(() => {
-    CoreClassLogger.enable()
-    CoreClassLogger.setLevel('verbose')
-
-    CoreModuleLogger.enable()
-    CoreModuleLogger.setLevel('verbose')
-  })
-
   test('does something', async () => {
-    let checkin: AndroidCheckinResponse | Error
+    let checkin: ACGCheckinResponse | Error
 
-    checkin = await ACGCheckin()
+    checkin = await ACGCheckinRequest()
     if (checkin instanceof Error) throw checkin
 
-    await ACGRegister(generateRandomString(), checkin.androidId, checkin.securityToken)
+    await ACGRegisterRequest(generateRandomString(), checkin.android_id, checkin.security_token)
   })
 })
