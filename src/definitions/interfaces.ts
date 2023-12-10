@@ -12,11 +12,12 @@ export interface FCMClientCrypto {
 }
 
 export interface FCMClientData {
+  cursor: number
   heartbeat?: HeartbeatAck
   login?: LoginResponse
   size: {
     expected: number
-    received: number
+    packets: number
   }
   state: MCSState
   tag: MCSTag

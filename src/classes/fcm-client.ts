@@ -1,10 +1,10 @@
-import { FetchError, setTimeout } from '@aracna/core'
+import { FetchError, setTimeout, tc } from '@aracna/core'
 import { ECDH, createECDH } from 'crypto'
 import { Socket } from 'net'
 import { TLSSocket, connect } from 'tls'
 import {
-  ACG_REGISTER_CHROME_VERSION,
   MCS_HEARTBEAT_PING_TIMEOUT_MS,
+  MCS_SIZE_PACKET_MAX_LENGTH,
   MCS_SIZE_PACKET_MIN_LENGTH,
   MCS_TAG_PACKET_LENGTH,
   MCS_VERSION,
@@ -28,9 +28,10 @@ export class FCMClient {
     this.acg = acg
     this.crypto = crypto
     this.data = {
+      cursor: 0,
       size: {
         expected: 0,
-        received: 0
+        packets: 0
       },
       state: MCSState.VERSION_TAG_AND_SIZE,
       tag: MCSTag.LOGIN_RESPONSE,
@@ -97,7 +98,7 @@ export class FCMClient {
 
   onSocketData = (data: Buffer) => {
     this.data.value = Buffer.concat([this.data.value, data])
-    FCMLogger.verbose('FCMClient', 'onSocketData', data, this.data.value)
+    FCMLogger.verbose('FCMClient', 'onSocketData', data, this.data.value, [data.length, this.data.value.length])
 
     switch (this.data.state) {
       case MCSState.VERSION_TAG_AND_SIZE:
@@ -114,22 +115,23 @@ export class FCMClient {
         if (this.data.value.length < MCS_TAG_PACKET_LENGTH + MCS_SIZE_PACKET_MIN_LENGTH) {
           return
         }
+
         this.onSocketDataTag()
         this.onSocketDataSize()
 
         break
       case MCSState.SIZE:
-        if (this.data.value.length < this.data.size.received + 1) {
-          return
-        }
+        // if (this.data.value.length - this.data.cursor < this.data.size.packets + 1) {
+        //   return
+        // }
 
         this.onSocketDataSize()
 
         break
       case MCSState.BYTES:
-        if (this.data.value.length < this.data.size.expected) {
-          return
-        }
+        // if (this.data.value.length - this.data.cursor < this.data.size.expected) {
+        //   return
+        // }
 
         this.onSocketDataBytes()
 
@@ -151,43 +153,66 @@ export class FCMClient {
       return
     }
 
-    this.data.size.received++
-    FCMLogger.verbose('FCMClient', 'onSocketDataVersion', `Increasing the received size by 1.`, [this.data.size.received])
+    this.data.cursor++
+    FCMLogger.verbose('FCMClient', 'onSocketDataVersion', `Increasing the cursor by 1.`, [this.data.cursor])
 
     this.data.state = MCSState.TAG_AND_SIZE
     FCMLogger.info('FCMClient', 'onSocketDataVersion', `Setting state to TAG_AND_SIZE.`, [this.data.state])
   }
 
   onSocketDataTag = () => {
-    this.data.tag = this.data.value.readUInt8(this.data.size.received)
-    FCMLogger.info('FCMClient', 'onSocketDataTag', this.data.tag)
+    this.data.tag = this.data.value.readUInt8(this.data.cursor)
+    FCMLogger.info('FCMClient', 'onSocketDataTag', [this.data.tag, MCSTag[this.data.tag]])
 
-    this.data.size.received++
-    FCMLogger.verbose('FCMClient', 'onSocketDataTag', `Increasing the received size by 1.`, [this.data.size.received])
+    this.data.cursor++
+    FCMLogger.verbose('FCMClient', 'onSocketDataTag', `Increasing the cursor by 1.`, [this.data.cursor])
 
     this.data.state = MCSState.SIZE
     FCMLogger.info('FCMClient', 'onSocketDataTag', `Setting state to SIZE.`, [this.data.state])
   }
 
   onSocketDataSize = () => {
-    this.data.size.expected = this.data.value.readUInt8(this.data.size.received)
-    FCMLogger.info('FCMClient', 'onSocketDataSize', this.data.size.expected)
+    this.data.size.expected += this.data.value.readUInt8(this.data.cursor)
+    FCMLogger.info('FCMClient', 'onSocketDataSize', [this.data.size.expected])
 
-    this.data.size.received++
-    FCMLogger.verbose('FCMClient', 'onSocketDataSize', `Increasing the received size by 1.`, [this.data.size.received])
+    if (this.data.size.packets >= MCS_SIZE_PACKET_MAX_LENGTH) {
+      this.data.cursor = 0
+      this.data.size.expected = 0
+      this.data.size.packets = 0
+      this.data.state = MCSState.TAG_AND_SIZE
+      this.data.value = Buffer.alloc(0)
 
-    this.data.state = MCSState.BYTES
-    FCMLogger.info('FCMClient', 'onSocketDataSize', `Setting state to BYTES.`, [this.data.state])
+      FCMLogger.warn('FCMClient', 'onSocketDataBytes', `Failed to read current message, ready for the next one.`)
+    }
 
-    this.onSocketDataBytes()
+    this.data.cursor++
+    FCMLogger.verbose('FCMClient', 'onSocketDataSize', `Increasing the cursor by 1.`, [this.data.cursor])
+
+    this.data.size.packets++
+    FCMLogger.verbose('FCMClient', 'onSocketDataSize', `Increasing the packets by 1.`, [this.data.size.packets])
+
+    if (this.data.value.length - this.data.cursor >= this.data.size.expected) {
+      this.data.state = MCSState.BYTES
+      FCMLogger.info('FCMClient', 'onSocketDataSize', `Setting state to BYTES.`, [this.data.state])
+
+      this.onSocketDataBytes()
+    }
   }
 
   onSocketDataBytes = () => {
     switch (this.data.tag) {
       case MCSTag.HEARTBEAT_ACK:
-        let heartbeat: HeartbeatAck
+        let heartbeat: HeartbeatAck | Error
 
-        heartbeat = HeartbeatAck.decode(this.data.value.subarray(this.data.size.received, this.data.size.expected))
+        heartbeat = tc(() => HeartbeatAck.decode(this.data.value.subarray(this.data.cursor)))
+
+        if (heartbeat instanceof Error || !heartbeat.streamId) {
+          this.data.state = MCSState.SIZE
+          this.onSocketDataSize()
+
+          return
+        }
+
         FCMLogger.info('FCMClient', 'onSocketDataBytes', 'HEARTBEAT_ACK', `The bytes have been decoded.`, heartbeat)
 
         this.data.heartbeat = heartbeat
@@ -197,23 +222,41 @@ export class FCMClient {
 
         break
       case MCSTag.LOGIN_RESPONSE:
-        let login: LoginResponse
+        let login: LoginResponse | Error
 
-        login = LoginResponse.decode(this.data.value.subarray(this.data.size.received, this.data.size.expected))
+        login = tc(() => LoginResponse.decode(this.data.value.subarray(this.data.cursor)))
+
+        if (login instanceof Error || !login.id) {
+          this.data.state = MCSState.SIZE
+          this.onSocketDataSize()
+
+          return
+        }
+
         FCMLogger.info('FCMClient', 'onSocketDataBytes', 'LOGIN_RESPONSE', `The bytes have been decoded.`, login)
+
+        if (login.error) {
+          break
+        }
 
         this.data.login = login
         FCMLogger.verbose('FCMClient', 'onSocketDataBytes', 'LOGIN_RESPONSE', `The login response has been set inside data.`)
 
-        if (!login.error) {
-          setTimeout(this.onHeartbeatPing, MCS_HEARTBEAT_PING_TIMEOUT_MS)
-        }
+        setTimeout(this.onHeartbeatPing, MCS_HEARTBEAT_PING_TIMEOUT_MS)
 
         break
       case MCSTag.CLOSE:
-        let close: Close
+        let close: Close | Error
 
-        close = Close.decode(this.data.value.subarray(this.data.size.received, this.data.size.expected))
+        close = tc(() => Close.decode(this.data.value.subarray(this.data.cursor)))
+
+        if (close instanceof Error) {
+          this.data.state = MCSState.SIZE
+          this.onSocketDataSize()
+
+          return
+        }
+
         FCMLogger.info('FCMClient', 'onSocketDataBytes', 'CLOSE', `The bytes have been decoded.`, close)
 
         break
@@ -222,16 +265,32 @@ export class FCMClient {
       // case MCSTag.PRESENCE_STANZA:
       //   break
       case MCSTag.IQ_STANZA:
-        let iq: IqStanza
+        let iq: IqStanza | Error
 
-        iq = IqStanza.decode(this.data.value.subarray(this.data.size.received, this.data.size.expected))
+        iq = tc(() => IqStanza.decode(this.data.value.subarray(this.data.cursor)), false)
+
+        if (iq instanceof Error || !iq.id) {
+          this.data.state = MCSState.SIZE
+          this.onSocketDataSize()
+
+          return
+        }
+
         FCMLogger.info('FCMClient', 'onSocketDataBytes', 'IQ_STANZA', `The bytes have been decoded.`, iq)
 
         break
       case MCSTag.DATA_MESSAGE_STANZA:
-        let message: DataMessageStanza, ecdh: ECDH, data: Uint8Array
+        let message: DataMessageStanza | Error, ecdh: ECDH, data: Uint8Array
 
-        message = DataMessageStanza.decode(this.data.value.subarray(this.data.size.received, this.data.size.expected))
+        message = tc(() => DataMessageStanza.decode(this.data.value.subarray(this.data.cursor)), false)
+
+        if (message instanceof Error || !message.id) {
+          this.data.state = MCSState.SIZE
+          this.onSocketDataSize()
+
+          return
+        }
+
         FCMLogger.info('FCMClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The bytes have been decoded.`, message)
 
         ecdh = createECDH('prime256v1')
@@ -254,10 +313,13 @@ export class FCMClient {
       //   break
     }
 
+    this.data.cursor = 0
     this.data.size.expected = 0
-    this.data.size.received = 0
+    this.data.size.packets = 0
     this.data.state = MCSState.TAG_AND_SIZE
     this.data.value = Buffer.alloc(0)
+
+    FCMLogger.verbose('FCMClient', 'onSocketDataBytes', `Ready for a new message.`)
   }
 
   onSocketDrain = () => {
@@ -297,7 +359,7 @@ export class FCMClient {
       clientEvent: [],
       deviceId: `android-${this.acg.id.toString(16)}`,
       domain: 'mcs.android.com',
-      id: `chrome-${ACG_REGISTER_CHROME_VERSION}`,
+      id: `chrome-63.0.3234.0`,
       lastRmqId: 0n,
       networkType: 1,
       receivedPersistentId: [],
