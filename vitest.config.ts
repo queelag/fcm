@@ -8,6 +8,6 @@ export default defineConfig({
       reporter: ['lcov']
     },
     include: ['tests/**/*.test.ts'],
-    setupFiles: ['dotenv/config.js']
+    setupFiles: ['dotenv/config']
   }
 })
