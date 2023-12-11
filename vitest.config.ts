@@ -7,7 +7,6 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       reporter: ['lcov']
     },
-    include: ['tests/**/*.test.ts'],
-    setupFiles: ['dotenv/config']
+    include: ['tests/**/*.test.ts']
   }
 })
