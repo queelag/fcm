@@ -12,7 +12,7 @@ export interface FCMClientACG {
   securityToken: bigint
 }
 
-export interface FCMClientCrypto {
+export interface FCMClientECDH {
   privateKey: Uint8Array
   salt: Uint8Array
 }
@@ -22,7 +22,6 @@ export interface FCMClientData {
   heartbeat?: MCS.HeartbeatAck
   login?: MCS.LoginResponse
   size: {
-    expected: number
     packets: number
   }
   state: MCSState
@@ -31,7 +30,7 @@ export interface FCMClientData {
   version: number
 }
 
-export interface FCMSubscription {
+export interface FCMRegistration {
   acg: {
     id: bigint
     securityToken: bigint
@@ -39,8 +38,41 @@ export interface FCMSubscription {
   token: string
 }
 
-export interface Notification<T extends object = object> {
+export interface FCMSubscription extends FCMRegistration {}
+
+export interface Message<T extends object = object> {
   from: string
   notification: T
   priority: string
+}
+
+export interface RegisterToFCMConfig {
+  acg?: {
+    id?: bigint
+    securityToken?: bigint
+  }
+  appID: string
+  ecdh: {
+    publicKey: ArrayLike<number>
+    salt: ArrayLike<number>
+  }
+  firebase: {
+    apiKey: string
+    appID: string
+    projectID: string
+  }
+  vapidKey: string
+}
+
+export interface SubscribeToFCMConfig {
+  acg?: {
+    id?: bigint
+    securityToken?: bigint
+  }
+  appID: string
+  ecdh: {
+    publicKey: ArrayLike<number>
+    salt: ArrayLike<number>
+  }
+  senderID: string
 }

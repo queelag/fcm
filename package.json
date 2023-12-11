@@ -48,9 +48,9 @@
   },
   "repository": "https://github.com/aracna/fcm",
   "scripts": {
-    "build": "rm -rf dist && node esbuild.mjs && pnpm tsc && pnpm api-extractor run --local",
-    "generate:proto-json": "pnpm pbjs assets/android-checkin.proto -t json -o src/proto/android-checkin.json --keep-case && pnpm pbjs assets/checkin.proto -t json -o src/proto/checkin.json --keep-case && pnpm pbjs assets/mcs.proto -t json -o src/proto/mcs.json --keep-case && pnpm prettier",
-    "generate:proto-types": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto --ts_proto_opt=forceLong=long --ts_proto_opt=esModuleInterop=true --ts_proto_opt=importSuffix=.js --ts_proto_opt=onlyTypes=true --ts_proto_opt=snakeToCamel=false --ts_proto_opt=useSnakeTypeName=false --ts_proto_out=src/definitions/proto2 -I=assets assets/*.proto && pnpm prettier",
+    "build": "rm -rf dist && node esbuild.mjs && cp -rf src/assets dist/assets && pnpm tsc && pnpm api-extractor run --local",
+    "generate:proto-json": "pnpm pbjs proto/android-checkin.proto -t json -o src/assets/android-checkin.json --keep-case && pnpm pbjs proto/checkin.proto -t json -o src/assets/checkin.json --keep-case && pnpm pbjs proto/mcs.proto -t json -o src/assets/mcs.json --keep-case && pnpm prettier",
+    "generate:proto-types": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto --ts_proto_opt=forceLong=long --ts_proto_opt=esModuleInterop=true --ts_proto_opt=importSuffix=.js --ts_proto_opt=onlyTypes=true --ts_proto_opt=snakeToCamel=false --ts_proto_opt=useSnakeTypeName=false --ts_proto_out=src/definitions/proto -I=proto proto/*.proto && pnpm prettier",
     "prepublish": "pnpm build && pnpm version patch && cp LICENSE package.json README.md dist",
     "prettier": "prettier --write src",
     "test": "vitest run"

@@ -2,7 +2,7 @@ coverage
 declarations
 dist
 node_modules
-playground
+play
 
 .DS_Store
 .env

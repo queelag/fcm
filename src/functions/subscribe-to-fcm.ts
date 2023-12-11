@@ -1,29 +1,27 @@
 import { FetchError } from '@aracna/core'
-import { FCMAPIDefinitions } from '../definitions/fcm-api-definitions.js'
-import { ACGCheckinResponse, FCMSubscription } from '../definitions/interfaces.js'
-import { FCMSubscribeRequest } from '../index.js'
-import { ACGCheckinRequest, ACGRegisterRequest } from '../requests/acg-requests.js'
+import { FCMAPIDefinitions } from '../definitions/apis/fcm-api-definitions.js'
+import { ACGCheckinResponse, FCMSubscription, SubscribeToFCMConfig } from '../definitions/interfaces.js'
+import { postACGCheckin, postACGRegister } from '../requests/acg-requests.js'
+import { postFCMSubscribe } from '../requests/fcm-requests.js'
 
-export async function subscribeToFCM(
-  appID: string,
-  senderID: string,
-  key: ArrayLike<number>,
-  auth: ArrayLike<number>,
-  acgID?: bigint,
-  acgSecurityToken?: bigint
-): Promise<FCMSubscription | Error> {
+/**
+ * @deprecated
+ *
+ * Will stop working in June 2024.
+ */
+export async function subscribeToFCM(config: SubscribeToFCMConfig): Promise<FCMSubscription | Error> {
   let checkin: ACGCheckinResponse | FetchError,
     token: string | FetchError,
     fcm: FCMAPIDefinitions.SubscribeResponseData | FetchError,
     subscription: FCMSubscription
 
-  checkin = await ACGCheckinRequest(acgID, acgSecurityToken)
+  checkin = await postACGCheckin(config.acg?.id, config.acg?.securityToken)
   if (checkin instanceof Error) return checkin
 
-  token = await ACGRegisterRequest(appID, checkin.android_id, checkin.security_token)
+  token = await postACGRegister(checkin.android_id, checkin.security_token, config.appID)
   if (token instanceof Error) return token
 
-  fcm = await FCMSubscribeRequest(senderID, token, key, auth)
+  fcm = await postFCMSubscribe(config.senderID, token, config.ecdh.publicKey, config.ecdh.salt)
   if (fcm instanceof Error) return fcm
 
   subscription = {

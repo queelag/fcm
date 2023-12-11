@@ -1,6 +1,6 @@
 import protobuf from 'protobufjs'
+import JSON from '../assets/mcs.json'
 import { PROTOBUF_ROOT } from '../definitions/constants.js'
-import JSON from './mcs.json'
 
 protobuf.Root.fromJSON(JSON, PROTOBUF_ROOT)
 

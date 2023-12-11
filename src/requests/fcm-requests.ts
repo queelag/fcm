@@ -1,8 +1,8 @@
 import { FetchError, concatURL, encodeBase64URL, serializeURLSearchParams } from '@aracna/core'
 import { FCMAPI } from '../apis/fcm-api.js'
-import { FCMAPIDefinitions } from '../definitions/fcm-api-definitions.js'
+import { FCMAPIDefinitions } from '../definitions/apis/fcm-api-definitions.js'
 
-export async function FCMSubscribeRequest(
+export async function postFCMSubscribe(
   senderID: string,
   token: string,
   key: ArrayLike<number>,
@@ -16,6 +16,8 @@ export async function FCMSubscribeRequest(
     encryption_key: encodeBase64URL(key, { pad: false }),
     endpoint: concatURL(FCMAPI.baseURL, 'send', token)
   })
+
+  console.log(body)
 
   response = await FCMAPI.post('connect/subscribe', body)
   if (response instanceof Error) return response

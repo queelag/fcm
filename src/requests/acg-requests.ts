@@ -1,6 +1,6 @@
 import { FetchError, encodeBase64URL, serializeURLSearchParams } from '@aracna/core'
 import { ACGAPI } from '../apis/acg-api.js'
-import { ACGAPIDefinitions } from '../definitions/acg-api-definitions.js'
+import { ACGAPIDefinitions } from '../definitions/apis/acg-api-definitions.js'
 import { ACG_REGISTER_CHROME_VERSION, ACG_REGISTER_SENDER } from '../definitions/constants.js'
 import { ACGCheckinResponse } from '../definitions/interfaces.js'
 import { AndroidCheckin } from '../definitions/proto/android-checkin.js'
@@ -10,7 +10,7 @@ import { CheckinProto } from '../proto/checkin.js'
 import { parseLong } from '../utils/long-utils.js'
 import { decodeProtoType } from '../utils/proto-utils.js'
 
-export async function ACGCheckinRequest(id: bigint = 0n, securityToken: bigint = 0n): Promise<ACGCheckinResponse | FetchError> {
+export async function postACGCheckin(id: bigint = 0n, securityToken: bigint = 0n): Promise<ACGCheckinResponse | FetchError> {
   let request: Partial<Checkin.AndroidCheckinRequest>,
     body: Uint8Array,
     headers: HeadersInit,
@@ -74,18 +74,18 @@ export async function ACGCheckinRequest(id: bigint = 0n, securityToken: bigint =
   }
 }
 
-export async function ACGRegisterRequest(appID: string, androidID: bigint, securityToken: bigint): Promise<string | FetchError> {
+export async function postACGRegister(device: bigint, securityToken: bigint, subtype: string): Promise<string | FetchError> {
   let body: URLSearchParams, headers: HeadersInit, response: ACGAPIDefinitions.RegisterResponse | FetchError
 
   body = serializeURLSearchParams<ACGAPIDefinitions.RegisterRequestBody>({
     app: 'org.chromium.linux',
-    device: androidID,
+    device,
     sender: encodeBase64URL(ACG_REGISTER_SENDER, { pad: false }),
-    'X-subtype': appID
+    'X-subtype': subtype
   })
 
   headers = {
-    authorization: `AidLogin ${androidID}:${securityToken}`
+    authorization: `AidLogin ${device}:${securityToken}`
   }
 
   response = await ACGAPI.post('c2dm/register3', body, { headers })

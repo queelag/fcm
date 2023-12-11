@@ -3,7 +3,7 @@ import { ECDH, createECDH } from 'crypto'
 import EventEmitter from 'events'
 import { decrypt } from 'http_ece'
 import { Socket } from 'net'
-import { TLSSocket, connect } from 'tls'
+import { ConnectionOptions, TLSSocket, connect } from 'tls'
 import {
   ACG_REGISTER_CHROME_VERSION,
   MCS_HEARTBEAT_PING_TIMEOUT_MS,
@@ -16,31 +16,29 @@ import {
   MTALK_GOOGLE_PORT
 } from '../definitions/constants.js'
 import { MCSState, MCSTag } from '../definitions/enums.js'
-import { ACGCheckinResponse, FCMClientACG, FCMClientCrypto, FCMClientData, Notification } from '../definitions/interfaces.js'
+import { ACGCheckinResponse, FCMClientACG, FCMClientData, FCMClientECDH, Message } from '../definitions/interfaces.js'
 import { MCS } from '../definitions/proto/mcs.js'
-import { ACGCheckinRequest } from '../index.js'
+import { FCMClientEventName } from '../definitions/types.js'
 import { FCMLogger } from '../loggers/fcm-logger.js'
 import { MCSProto } from '../proto/mcs.js'
+import { ACGCheckinRequest } from '../requests/acg-requests.js'
 import { parseLong } from '../utils/long-utils.js'
 import { decodeProtoType } from '../utils/proto-utils.js'
 
 export class FCMClient extends EventEmitter {
-  acg: FCMClientACG
-  crypto: FCMClientCrypto
-  data: FCMClientData
+  private acg: FCMClientACG
+  private data: FCMClientData
+  private ecdh: FCMClientECDH
   socket: TLSSocket
 
-  constructor(acg: FCMClientACG, crypto: FCMClientCrypto) {
+  constructor(acg: FCMClientACG, ecdh: FCMClientECDH) {
     super()
 
     this.acg = acg
-    this.crypto = crypto
+    this.ecdh = ecdh
     this.data = {
       cursor: 0,
-      size: {
-        expected: 0,
-        packets: 0
-      },
+      size: { packets: MCS_SIZE_PACKET_MIN_LENGTH },
       state: MCSState.VERSION_TAG_AND_SIZE,
       tag: MCSTag.LOGIN_RESPONSE,
       value: Buffer.alloc(0),
@@ -49,15 +47,13 @@ export class FCMClient extends EventEmitter {
     this.socket = new TLSSocket(new Socket())
   }
 
-  async connect() {
+  async connect(options?: ConnectionOptions) {
     let checkin: ACGCheckinResponse | FetchError
 
     checkin = await ACGCheckinRequest(this.acg.id, this.acg.securityToken)
     if (checkin instanceof Error) return
 
-    this.socket = connect(MTALK_GOOGLE_PORT, MTALK_GOOGLE_HOST, { rejectUnauthorized: false })
-
-    // this.socket.enableTrace()
+    this.socket = connect(MTALK_GOOGLE_PORT, MTALK_GOOGLE_HOST, { rejectUnauthorized: false, ...options })
     this.socket.setKeepAlive(true)
 
     this.socket.on('close', this.onSocketClose)
@@ -76,7 +72,7 @@ export class FCMClient extends EventEmitter {
     this.socket.on('session', this.onSocketSession)
   }
 
-  login() {
+  private login() {
     let request: MCS.LoginRequest, encoded: Uint8Array, buffer: Buffer
 
     request = {
@@ -110,7 +106,7 @@ export class FCMClient extends EventEmitter {
     FCMLogger.info('FCMClient', 'onSocketReady', `The login request has been sent.`)
   }
 
-  heartbeat() {
+  private heartbeat() {
     let ping: MCS.HeartbeatPing, encoded: Uint8Array, buffer: Buffer
 
     ping = {
@@ -130,18 +126,15 @@ export class FCMClient extends EventEmitter {
     FCMLogger.info('FCMClient', 'onHeartbeat', 'HeartbeatPing', `The heartbeat ping has been sent.`)
   }
 
-  onSocketClose = async (error: boolean) => {
+  private onSocketClose = async (error: boolean) => {
     FCMLogger.warn('FCMClient', 'onSocketClose', 'The socket has been closed.', [error])
-
-    // await this.connect()
-    // FCMLogger.info('FCMClient', 'onSocketClose', 'Reconnecting to the server.')
   }
 
-  onSocketConnect = () => {
+  private onSocketConnect = () => {
     FCMLogger.info('FCMClient', 'onSocketConnect', 'The socket has been connected.')
   }
 
-  onSocketData = (data: Buffer) => {
+  private onSocketData = (data: Buffer) => {
     this.data.value = Buffer.concat([this.data.value, data])
     FCMLogger.verbose('FCMClient', 'onSocketData', data, this.data.value, [data.length, this.data.value.length])
 
@@ -177,7 +170,7 @@ export class FCMClient extends EventEmitter {
     }
   }
 
-  onSocketDataVersion = () => {
+  private onSocketDataVersion = () => {
     this.data.version = this.data.value.readUInt8(0)
     FCMLogger.info('FCMClient', 'onSocketDataVersion', this.data.version)
 
@@ -195,7 +188,7 @@ export class FCMClient extends EventEmitter {
     FCMLogger.info('FCMClient', 'onSocketDataVersion', `Setting state to TAG_AND_SIZE.`, [this.data.state])
   }
 
-  onSocketDataTag = () => {
+  private onSocketDataTag = () => {
     this.data.tag = this.data.value.readUInt8(this.data.cursor)
     FCMLogger.info('FCMClient', 'onSocketDataTag', [this.data.tag, MCSTag[this.data.tag]])
 
@@ -206,7 +199,7 @@ export class FCMClient extends EventEmitter {
     FCMLogger.info('FCMClient', 'onSocketDataTag', `Setting state to SIZE.`, [this.data.state])
   }
 
-  onSocketDataSize = () => {
+  private onSocketDataSize = () => {
     let decodable: string | null | Error
 
     if (this.data.value.length - this.data.cursor < MCS_SIZE_PACKET_MIN_LENGTH) {
@@ -216,8 +209,7 @@ export class FCMClient extends EventEmitter {
 
     if (this.data.size.packets >= MCS_SIZE_PACKET_MAX_LENGTH) {
       this.data.cursor = 0
-      this.data.size.expected = 0
-      this.data.size.packets = 0
+      this.data.size.packets = MCS_SIZE_PACKET_MIN_LENGTH
       this.data.state = MCSState.TAG_AND_SIZE
       this.data.value = Buffer.alloc(0)
 
@@ -225,30 +217,30 @@ export class FCMClient extends EventEmitter {
       return
     }
 
-    this.data.size.expected += this.data.value.readUInt8(this.data.cursor)
-    FCMLogger.info('FCMClient', 'onSocketDataSize', [this.data.size.expected])
-
-    this.data.cursor++
-    FCMLogger.verbose('FCMClient', 'onSocketDataSize', `Increasing the cursor by 1.`, [this.data.cursor])
-
-    this.data.size.packets++
-    FCMLogger.verbose('FCMClient', 'onSocketDataSize', `Increasing the packets by 1.`, [this.data.size.packets])
-
     switch (this.data.tag) {
       case MCSTag.HEARTBEAT_ACK:
-        decodable = tc(() => MCSProto.HeartbeatAck.verify(MCSProto.HeartbeatAck.decode(this.data.value.subarray(this.data.cursor))), false)
+        decodable = tc(
+          () => MCSProto.HeartbeatAck.verify(MCSProto.HeartbeatAck.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))),
+          false
+        )
         break
       case MCSTag.LOGIN_RESPONSE:
-        decodable = tc(() => MCSProto.LoginResponse.verify(MCSProto.LoginResponse.decode(this.data.value.subarray(this.data.cursor))), false)
+        decodable = tc(
+          () => MCSProto.LoginResponse.verify(MCSProto.LoginResponse.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))),
+          false
+        )
         break
       case MCSTag.CLOSE:
-        decodable = tc(() => MCSProto.Close.verify(MCSProto.Close.decode(this.data.value.subarray(this.data.cursor))), false)
+        decodable = tc(() => MCSProto.Close.verify(MCSProto.Close.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))), false)
         break
       case MCSTag.IQ_STANZA:
-        decodable = tc(() => MCSProto.IqStanza.verify(MCSProto.IqStanza.decode(this.data.value.subarray(this.data.cursor))), false)
+        decodable = tc(() => MCSProto.IqStanza.verify(MCSProto.IqStanza.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))), false)
         break
       case MCSTag.DATA_MESSAGE_STANZA:
-        decodable = tc(() => MCSProto.DataMessageStanza.verify(MCSProto.DataMessageStanza.decode(this.data.value.subarray(this.data.cursor))), false)
+        decodable = tc(
+          () => MCSProto.DataMessageStanza.verify(MCSProto.DataMessageStanza.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))),
+          false
+        )
         break
       default:
         decodable = null
@@ -256,11 +248,17 @@ export class FCMClient extends EventEmitter {
     }
 
     if (decodable instanceof Error || typeof decodable === 'string') {
+      this.data.size.packets++
+      FCMLogger.verbose('FCMClient', 'onSocketDataSize', `Increasing the packets by 1.`, [this.data.size.packets])
+
       this.onSocketDataSize()
       FCMLogger.verbose('FCMClient', 'onSocketDataSize', `Failed to decode the message with current size and bytes.`)
 
       return
     }
+
+    this.data.cursor += this.data.size.packets
+    FCMLogger.verbose('FCMClient', 'onSocketDataSize', `Increasing the cursor by ${this.data.size.packets}.`, [this.data.cursor])
 
     this.data.state = MCSState.BYTES
     FCMLogger.info('FCMClient', 'onSocketDataSize', `Setting state to BYTES.`, [this.data.state])
@@ -268,7 +266,7 @@ export class FCMClient extends EventEmitter {
     this.onSocketDataBytes()
   }
 
-  onSocketDataBytes = () => {
+  private onSocketDataBytes = () => {
     switch (this.data.tag) {
       case MCSTag.HEARTBEAT_ACK:
         let heartbeat: MCS.HeartbeatAck
@@ -314,16 +312,16 @@ export class FCMClient extends EventEmitter {
 
         break
       case MCSTag.DATA_MESSAGE_STANZA:
-        let message: MCS.DataMessageStanza, ecdh: ECDH, decrypted: Buffer, data: Notification
+        let message: MCS.DataMessageStanza, ecdh: ECDH, decrypted: Buffer, data: Message
 
         message = decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor))
         FCMLogger.info('FCMClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The bytes have been decoded.`, message)
 
         ecdh = createECDH('prime256v1')
-        ecdh.setPrivateKey(this.crypto.privateKey)
+        ecdh.setPrivateKey(this.ecdh.privateKey)
 
         decrypted = decrypt(Buffer.from(message.raw_data), {
-          authSecret: encodeBase64(this.crypto.salt),
+          authSecret: encodeBase64(this.ecdh.salt),
           dh: message.app_data.find((data: MCS.AppData) => data.key === 'crypto-key')?.value.slice(3),
           privateKey: ecdh,
           salt: message.app_data.find((data: MCS.AppData) => data.key === 'encryption')?.value.slice(5),
@@ -334,8 +332,8 @@ export class FCMClient extends EventEmitter {
         data = JSON.parse(decodeText(decrypted))
         FCMLogger.info('FCMClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message data has been parsed.`, data)
 
-        this.emit('notification', data)
-        FCMLogger.verbose('FCMClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The notification event has been emitted.`)
+        this.emit('message', data)
+        FCMLogger.verbose('FCMClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message event has been emitted.`)
 
         break
       default:
@@ -344,52 +342,101 @@ export class FCMClient extends EventEmitter {
     }
 
     this.data.cursor = 0
-    this.data.size.expected = 0
-    this.data.size.packets = 0
+    this.data.size.packets = MCS_SIZE_PACKET_MIN_LENGTH
     this.data.state = MCSState.TAG_AND_SIZE
     this.data.value = Buffer.alloc(0)
 
     FCMLogger.verbose('FCMClient', 'onSocketDataBytes', `Ready for a new message.`)
   }
 
-  onSocketDrain = () => {
+  private onSocketDrain = () => {
     FCMLogger.verbose('FCMClient', 'onSocketDrain', 'The socket has been drained.')
   }
 
-  onSocketEnd = () => {
+  private onSocketEnd = () => {
     FCMLogger.info('FCMClient', 'onSocketEnd', 'The socket connection has ended.')
   }
 
-  onSocketError = (error: Error) => {
+  private onSocketError = (error: Error) => {
     FCMLogger.error('FCMClient', 'onSocketError', error)
   }
 
-  onSocketKeylog = (line: Buffer) => {
+  private onSocketKeylog = (line: Buffer) => {
     FCMLogger.verbose('FCMClient', 'onSocketKeylog', line)
   }
 
-  onSocketLookup = (error: Error, address: string, family: string, host: string) => {
+  private onSocketLookup = (error: Error, address: string, family: string, host: string) => {
     FCMLogger.verbose('FCMClient', 'onSocketLookup', [error, address, family, host])
   }
 
-  onSocketOCSPResponse = (response: Buffer) => {
+  private onSocketOCSPResponse = (response: Buffer) => {
     FCMLogger.verbose('FCMClient', 'onSocketOCSPResponse', response)
   }
 
-  onSocketReady = () => {
+  private onSocketReady = () => {
     FCMLogger.info('FCMClient', 'onSocketReady', 'The socket is ready.')
+
     this.login()
+    FCMLogger.verbose('FCMClient', 'onSocketReady', 'The login request has been sent.')
   }
 
-  onSocketSecureConnect = () => {
+  private onSocketSecureConnect = () => {
     FCMLogger.verbose('FCMClient', 'onSocketSecureConnect', 'The socket has been securely connected.')
   }
 
-  onSocketSession = (session: Buffer) => {
+  private onSocketSession = (session: Buffer) => {
     FCMLogger.verbose('FCMClient', 'onSocketSession', session)
   }
 
-  onSocketTimeout = () => {
+  private onSocketTimeout = () => {
     FCMLogger.warn('FCMClient', 'onSocketTimeout', 'The socket has timed out.')
+  }
+
+  addListener(eventName: FCMClientEventName, listener: (...args: any[]) => void): this {
+    return super.addListener(eventName, listener)
+  }
+
+  emit(eventName: FCMClientEventName, ...args: any[]): boolean {
+    return super.emit(eventName, ...args)
+  }
+
+  listenerCount(eventName: FCMClientEventName, listener?: Function | undefined): number {
+    return super.listenerCount(eventName, listener)
+  }
+
+  listeners(eventName: FCMClientEventName): Function[] {
+    return super.listeners(eventName)
+  }
+
+  off(eventName: FCMClientEventName, listener: (...args: any[]) => void): this {
+    return super.off(eventName, listener)
+  }
+
+  on(eventName: FCMClientEventName, listener: (...args: any[]) => void): this {
+    return super.on(eventName, listener)
+  }
+
+  once(eventName: FCMClientEventName, listener: (...args: any[]) => void): this {
+    return super.once(eventName, listener)
+  }
+
+  prependListener(eventName: FCMClientEventName, listener: (...args: any[]) => void): this {
+    return super.prependListener(eventName, listener)
+  }
+
+  prependOnceListener(eventName: FCMClientEventName, listener: (...args: any[]) => void): this {
+    return super.prependOnceListener(eventName, listener)
+  }
+
+  rawListeners(eventName: FCMClientEventName): Function[] {
+    return super.rawListeners(eventName)
+  }
+
+  removeListener(eventName: FCMClientEventName, listener: (...args: any[]) => void): this {
+    return super.removeListener(eventName, listener)
+  }
+
+  removeAllListeners(eventName?: FCMClientEventName): this {
+    return super.removeAllListeners(eventName)
   }
 }

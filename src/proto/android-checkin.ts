@@ -1,6 +1,6 @@
 import protobuf from 'protobufjs'
+import JSON from '../assets/android-checkin.json'
 import { PROTOBUF_ROOT } from '../definitions/constants.js'
-import JSON from './android-checkin.json'
 
 protobuf.Root.fromJSON(JSON, PROTOBUF_ROOT)
 
