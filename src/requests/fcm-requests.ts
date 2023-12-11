@@ -2,6 +2,38 @@ import { FetchError, concatURL, encodeBase64URL, serializeURLSearchParams } from
 import { FCMAPI } from '../apis/fcm-api.js'
 import { FCMAPIDefinitions } from '../definitions/apis/fcm-api-definitions.js'
 
+/**
+ * @deprecated
+ *
+ * Will stop working in June 2024.
+ */
+export async function postFCMSend<T extends object>(serverKey: string, to: string, notification: T): Promise<FCMAPIDefinitions.SendResponseData | FetchError> {
+  let body: FCMAPIDefinitions.SendRequestBody, headers: HeadersInit, response: FCMAPIDefinitions.SendResponse | FetchError
+
+  body = {
+    notification: notification,
+    to: to
+  }
+
+  headers = {
+    authorization: `key=${serverKey}`
+  }
+
+  response = await FCMAPI.post('send', body, { headers })
+  if (response instanceof Error) return response
+
+  if (response.data.failure > 0) {
+    return FetchError.from(response)
+  }
+
+  return response.data
+}
+
+/**
+ * @deprecated
+ *
+ * Will stop working in June 2024.
+ */
 export async function postFCMSubscribe(
   senderID: string,
   token: string,
@@ -16,8 +48,6 @@ export async function postFCMSubscribe(
     encryption_key: encodeBase64URL(key, { pad: false }),
     endpoint: concatURL(FCMAPI.baseURL, 'send', token)
   })
-
-  console.log(body)
 
   response = await FCMAPI.post('connect/subscribe', body)
   if (response instanceof Error) return response

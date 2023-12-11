@@ -1,26 +1,23 @@
-import { FetchError, generateRandomString } from '@aracna/core'
-import { ECDH } from 'crypto'
-import { beforeAll, describe, expect, it } from 'vitest'
-import { createFCMPrime256v1ECDH, generateFCMSalt } from '../../src'
+import { FetchError } from '@aracna/core'
+import { describe, expect, it } from 'vitest'
 import { FCMAPIDefinitions } from '../../src/definitions/apis/fcm-api-definitions'
-import { postFCMSubscribe } from '../../src/requests/fcm-requests'
+import { postFCMSend, postFCMSubscribe } from '../../src/requests/fcm-requests'
+import { ACG_TOKEN, ECDH_PUBLIC_KEY, ECDH_SALT } from '../definitions/constants'
 
 describe('FCM Requests', () => {
-  let token: string
+  it('sends', async () => {
+    let sent: FCMAPIDefinitions.SendResponseData | FetchError
 
-  beforeAll(() => {
-    token =
-      'f1p1CIZsW7U:APA91bEKI_wOi9pSqOHeD2s-F0CMgNVSaegfsI06WASAjFZVOazOCg3p3YnkoezG3zJ2USN--IN9gRdZtyA91JZqOKdaX9i03QAtwkBZOmlj7LKGM8-cy51QxT4x1_4fpzwI4uWsrgPo'
+    sent = await postFCMSend(import.meta.env.VITE_FCM_SERVER_KEY, import.meta.env.VITE_FCM_TOKEN, {})
+    if (sent instanceof Error) throw sent
+
+    expect(sent.success).toBe(1)
   })
 
   it('subscribes', async () => {
-    let senderID: string, ecdh: ECDH, salt: Uint8Array, subscription: FCMAPIDefinitions.SubscribeResponseData | FetchError
+    let subscription: FCMAPIDefinitions.SubscribeResponseData | FetchError
 
-    senderID = generateRandomString()
-    ecdh = createFCMPrime256v1ECDH()
-    salt = generateFCMSalt()
-
-    subscription = await postFCMSubscribe(senderID, token, ecdh.getPublicKey(), salt)
+    subscription = await postFCMSubscribe(import.meta.env.VITE_FCM_SENDER_ID, ACG_TOKEN, ECDH_PUBLIC_KEY, ECDH_SALT)
     if (subscription instanceof Error) throw subscription
 
     expect(subscription.token).toBeTypeOf('string')

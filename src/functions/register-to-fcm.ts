@@ -4,7 +4,7 @@ import { FirebaseInstallationsAPIDefinitions } from '../definitions/apis/firebas
 import { ACGCheckinResponse, FCMRegistration, RegisterToFCMConfig } from '../definitions/interfaces.js'
 import { postACGCheckin, postACGRegister } from '../requests/acg-requests.js'
 import { postFCMRegistrations } from '../requests/fcm-registrations-requests.js'
-import { postFirebaseInstallations } from '../requests/firebase-requests.js'
+import { postFirebaseInstallations } from '../requests/firebase-installations-requests.js'
 
 export async function registerToFCM(config: RegisterToFCMConfig): Promise<FCMRegistration | Error> {
   let checkin: ACGCheckinResponse | FetchError,

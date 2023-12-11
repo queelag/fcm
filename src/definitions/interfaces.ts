@@ -40,7 +40,9 @@ export interface FCMRegistration {
 
 export interface FCMSubscription extends FCMRegistration {}
 
-export interface Message<T extends object = object> {
+export interface Message extends MCS.DataMessageStanza {}
+
+export interface MessageData<T extends object = object> {
   from: string
   notification: T
   priority: string
