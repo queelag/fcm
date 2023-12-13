@@ -8,6 +8,8 @@ export const ACG_REGISTER_SENDER: number[] = [
   0x08, 0x6a, 0x6f, 0x2d, 0xb1, 0x1a, 0x95, 0xb0, 0xce, 0x37, 0xc0, 0x9c, 0x6e
 ]
 
+export const GOOGLE_AUTH_JWT_SCOPES: string[] = ['https://www.googleapis.com/auth/firebase.messaging']
+
 export const MTALK_GOOGLE_HOST: string = 'mtalk.google.com'
 export const MTALK_GOOGLE_PORT: number = 5228
 

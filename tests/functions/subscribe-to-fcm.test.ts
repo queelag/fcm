@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { FCMSubscription, subscribeToFCM } from '../../src'
+import { FcmSubscription, subscribeToFcm } from '../../src'
 import { ACG_ID, ACG_SECURITY_TOKEN, APP_ID, ECDH_PUBLIC_KEY, ECDH_SALT } from '../definitions/constants'
 
-describe('subscribeToFCM', () => {
+describe('subscribeToFcm', () => {
   it('works', async () => {
-    let subscription: FCMSubscription | Error
+    let subscription: FcmSubscription | Error
 
-    subscription = await subscribeToFCM({
+    subscription = await subscribeToFcm({
       acg: {
         id: ACG_ID,
         securityToken: ACG_SECURITY_TOKEN

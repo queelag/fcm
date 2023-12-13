@@ -1,6 +1,7 @@
 {
   "author": "Dario Sechi",
   "dependencies": {
+    "google-auth-library": "^9.4.1",
     "http_ece": "^1.1.0",
     "long": "^5.2.3",
     "protobufjs": "^7.2.5"

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { FCMRegistration, registerToFCM } from '../../src'
+import { FcmRegistration, registerToFcm } from '../../src'
 import { ACG_ID, ACG_SECURITY_TOKEN, APP_ID, ECDH_PUBLIC_KEY, ECDH_SALT } from '../definitions/constants'
 
-describe('registerToFCM', () => {
+describe('registerToFcm', () => {
   it('works', async () => {
-    let registration: FCMRegistration | Error
+    let registration: FcmRegistration | Error
 
-    registration = await registerToFCM({
+    registration = await registerToFcm({
       acg: {
         id: ACG_ID,
         securityToken: ACG_SECURITY_TOKEN

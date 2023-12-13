@@ -1,30 +1,31 @@
 import { FetchError, concatURL, encodeBase64URL, serializeURLSearchParams } from '@aracna/core'
-import { FCMAPI } from '../apis/fcm-api.js'
-import { FCMAPIDefinitions } from '../definitions/apis/fcm-api-definitions.js'
+import { FcmAPI } from '../apis/fcm-api.js'
+import { FcmApiDefinitions } from '../definitions/apis/fcm-api-definitions.js'
+import { GoogleServiceAccount } from '../definitions/interfaces.js'
+import { getGoogleAuthAccessToken } from '../utils/google-auth-utils.js'
 
 /**
- * @deprecated
- *
- * Will stop working in June 2024.
+ * Send a message to specified target (a registration token, topic or condition).
  */
-export async function postFCMSend<T extends object>(serverKey: string, to: string, notification: T): Promise<FCMAPIDefinitions.SendResponseData | FetchError> {
-  let body: FCMAPIDefinitions.SendRequestBody, headers: HeadersInit, response: FCMAPIDefinitions.SendResponse | FetchError
+export async function postFcmSendV1<T extends object>(
+  projectID: string,
+  serviceAccount: GoogleServiceAccount,
+  message: FcmApiDefinitions.V1.MessageWithTarget<T>,
+  validateOnly?: boolean
+): Promise<FcmApiDefinitions.V1.Message<T> | FcmApiDefinitions.V1.Error> {
+  let body: FcmApiDefinitions.V1.SendRequestBody<T>, headers: HeadersInit, response: FcmApiDefinitions.V1.SendResponse<T> | FcmApiDefinitions.V1.Error
 
   body = {
-    notification: notification,
-    to: to
+    message,
+    validate_only: validateOnly
   }
 
   headers = {
-    authorization: `key=${serverKey}`
+    authorization: `Bearer ${await getGoogleAuthAccessToken(serviceAccount.client_email, serviceAccount.private_key)}`
   }
 
-  response = await FCMAPI.post('send', body, { headers })
+  response = await FcmAPI.post(`v1/projects/${projectID}/messages:send`, body, { headers })
   if (response instanceof Error) return response
-
-  if (response.data.failure > 0) {
-    return FetchError.from(response)
-  }
 
   return response.data
 }
@@ -34,22 +35,22 @@ export async function postFCMSend<T extends object>(serverKey: string, to: strin
  *
  * Will stop working in June 2024.
  */
-export async function postFCMSubscribe(
+export async function postFcmSubscribe(
   senderID: string,
   token: string,
   key: ArrayLike<number>,
   auth: ArrayLike<number>
-): Promise<FCMAPIDefinitions.SubscribeResponseData | FetchError> {
-  let body: URLSearchParams, response: FCMAPIDefinitions.SubscribeResponse | FetchError
+): Promise<FcmApiDefinitions.SubscribeResponseData | FetchError> {
+  let body: URLSearchParams, response: FcmApiDefinitions.SubscribeResponse | FetchError
 
-  body = serializeURLSearchParams<FCMAPIDefinitions.SubscribeRequestBody>({
+  body = serializeURLSearchParams<FcmApiDefinitions.SubscribeRequestBody>({
     authorized_entity: senderID,
     encryption_auth: encodeBase64URL(auth, { pad: false }),
     encryption_key: encodeBase64URL(key, { pad: false }),
-    endpoint: concatURL(FCMAPI.baseURL, 'send', token)
+    endpoint: concatURL(FcmAPI.baseURL, 'fcm/send', token)
   })
 
-  response = await FCMAPI.post('connect/subscribe', body)
+  response = await FcmAPI.post('fcm/connect/subscribe', body)
   if (response instanceof Error) return response
 
   return response.data

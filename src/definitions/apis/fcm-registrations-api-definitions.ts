@@ -1,6 +1,6 @@
 import { FetchResponse } from '@aracna/core'
 
-export namespace FCMRegistrationsAPIDefinitions {
+export namespace FcmRegistrationsApiDefinitions {
   export interface RegistrationsRequestBody {
     web: {
       applicationPubKey: string

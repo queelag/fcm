@@ -1,3 +1,9 @@
+export enum LoggerName {
+  CLASS = 'CLASS',
+  FUNCTION = 'FUNCTION',
+  REQUEST = 'REQUEST'
+}
+
 export enum MCSState {
   VERSION_TAG_AND_SIZE,
   TAG_AND_SIZE,

@@ -1,6 +1,6 @@
 import { FetchResponse } from '@aracna/core'
 
-export namespace FirebaseInstallationsAPIDefinitions {
+export namespace FirebaseInstallationsApiDefinitions {
   export interface Heartbeat {
     heartbeats: void[]
     version: number

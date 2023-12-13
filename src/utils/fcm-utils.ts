@@ -1,6 +1,6 @@
 import { ECDH, createECDH, randomBytes } from 'crypto'
 
-export function createFCMPrime256v1ECDH(): ECDH {
+export function createFcmECDH(): ECDH {
   let ecdh: ECDH
 
   ecdh = createECDH('prime256v1')
@@ -9,6 +9,6 @@ export function createFCMPrime256v1ECDH(): ECDH {
   return ecdh
 }
 
-export function generateFCMSalt(): Uint8Array {
+export function generateFcmSalt(): Uint8Array {
   return randomBytes(16)
 }

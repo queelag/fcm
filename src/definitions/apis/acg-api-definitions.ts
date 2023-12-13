@@ -1,6 +1,6 @@
 import { FetchResponse } from '@aracna/core'
 
-export namespace ACGAPIDefinitions {
+export namespace AcgApiDefinitions {
   export interface CheckinResponse extends FetchResponse<ArrayBuffer> {}
 
   export interface RegisterRequestBody {

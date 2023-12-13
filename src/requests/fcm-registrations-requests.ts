@@ -1,9 +1,9 @@
 import { FetchError, concatURL, encodeBase64URL } from '@aracna/core'
-import { FCMAPI } from '../apis/fcm-api.js'
-import { FCMRegistrationsAPI } from '../apis/fcm-registrations-api.js'
-import { FCMRegistrationsAPIDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'
+import { FcmAPI } from '../apis/fcm-api.js'
+import { FcmRegistrationsAPI } from '../apis/fcm-registrations-api.js'
+import { FcmRegistrationsApiDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'
 
-export async function postFCMRegistrations(
+export async function postFcmRegistrations(
   projectID: string,
   apiKey: string,
   applicationPubKey: string,
@@ -11,26 +11,26 @@ export async function postFCMRegistrations(
   firebaseInstallationsAuth: string,
   p256dh: ArrayLike<number>,
   token: string
-): Promise<FCMRegistrationsAPIDefinitions.RegistrationsResponseData | FetchError> {
-  let body: FCMRegistrationsAPIDefinitions.RegistrationsRequestBody,
+): Promise<FcmRegistrationsApiDefinitions.RegistrationsResponseData | FetchError> {
+  let body: FcmRegistrationsApiDefinitions.RegistrationsRequestBody,
     headers: HeadersInit,
-    response: FCMRegistrationsAPIDefinitions.RegistrationsResponse | FetchError
+    response: FcmRegistrationsApiDefinitions.RegistrationsResponse | FetchError
 
   body = {
     web: {
       applicationPubKey,
       auth: encodeBase64URL(auth, { pad: false }),
-      endpoint: concatURL(FCMAPI.baseURL, 'send', token),
+      endpoint: concatURL(FcmAPI.baseURL, 'fcm/send', token),
       p256dh: encodeBase64URL(p256dh, { pad: false })
     }
   }
 
   headers = {
-    'X-Goog-Api-Key': apiKey,
-    'X-Goog-Firebase-Installations-Auth': firebaseInstallationsAuth
+    'x-goog-api-key': apiKey,
+    'x-goog-firebase-installations-auth': firebaseInstallationsAuth
   }
 
-  response = await FCMRegistrationsAPI.post(`projects/${projectID}/registrations`, body, { headers })
+  response = await FcmRegistrationsAPI.post(`projects/${projectID}/registrations`, body, { headers })
   if (response instanceof Error) return response
 
   return response.data

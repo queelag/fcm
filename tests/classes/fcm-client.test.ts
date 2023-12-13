@@ -1,13 +1,11 @@
-import { DeferredPromise, FetchError, PromiseState } from '@aracna/core'
+import { DeferredPromise, FetchError, PromiseState, decodeBase64, decodeText } from '@aracna/core'
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { FCMClient, FCMClientACG, FCMClientECDH, Message, MessageData } from '../../src'
-import { FCMAPIDefinitions } from '../../src/definitions/apis/fcm-api-definitions'
+import { FcmApiError, FcmApiMessage, FcmClient, FcmClientACG, FcmClientECDH, FcmClientMessage, FcmClientMessageData, sendFcmMessage } from '../../src'
 import { MCSTag } from '../../src/definitions/enums'
-import { postFCMSend } from '../../src/requests/fcm-requests'
 import { ACG_ID, ACG_SECURITY_TOKEN, ECDH_PRIVATE_KEY, ECDH_SALT } from '../definitions/constants'
 
-describe('FCMClient', () => {
-  let acg: FCMClientACG, ecdh: FCMClientECDH, client: FCMClient
+describe('FcmClient', () => {
+  let acg: FcmClientACG, ecdh: FcmClientECDH, client: FcmClient
 
   beforeAll(() => {
     acg = {
@@ -21,7 +19,7 @@ describe('FCMClient', () => {
   })
 
   beforeEach(() => {
-    client = new FCMClient(acg, ecdh)
+    client = new FcmClient(acg, ecdh)
   })
 
   it('closes if a bad message is sent', async () => {
@@ -79,16 +77,18 @@ describe('FCMClient', () => {
   })
 
   it('emits the message event', async () => {
-    let promise: DeferredPromise<Message>, send: FCMAPIDefinitions.SendResponseData | FetchError, message: Message
+    let promise: DeferredPromise<FcmClientMessage>, sent: FcmApiMessage | FcmApiError, message: FcmClientMessage
 
     promise = new DeferredPromise()
 
-    client.on('message', (message: Message) => promise.resolve(message))
+    client.on('message', (message: FcmClientMessage) => promise.resolve(message))
 
     await client.connect()
 
-    send = await postFCMSend(import.meta.env.VITE_FCM_SERVER_KEY, import.meta.env.VITE_FCM_TOKEN, {})
-    if (send instanceof Error) throw send
+    sent = await sendFcmMessage(import.meta.env.VITE_FIREBASE_PROJECT_ID, JSON.parse(decodeText(decodeBase64(import.meta.env.VITE_GOOGLE_SERVICE_ACCOUNT))), {
+      token: import.meta.env.VITE_FCM_TOKEN
+    })
+    if (sent instanceof Error) throw sent
 
     message = await promise.instance
 
@@ -96,16 +96,18 @@ describe('FCMClient', () => {
   })
 
   it('emits the message-data event', async () => {
-    let promise: DeferredPromise<MessageData>, send: FCMAPIDefinitions.SendResponseData | FetchError, data: MessageData
+    let promise: DeferredPromise<FcmClientMessageData>, sent: FcmApiMessage | FcmApiError, data: FcmClientMessageData
 
     promise = new DeferredPromise()
 
-    client.on('message-data', (data: MessageData) => promise.resolve(data))
+    client.on('message-data', (data: FcmClientMessageData) => promise.resolve(data))
 
     await client.connect()
 
-    send = await postFCMSend(import.meta.env.VITE_FCM_SERVER_KEY, import.meta.env.VITE_FCM_TOKEN, {})
-    if (send instanceof Error) throw send
+    sent = await sendFcmMessage(import.meta.env.VITE_FIREBASE_PROJECT_ID, JSON.parse(decodeText(decodeBase64(import.meta.env.VITE_GOOGLE_SERVICE_ACCOUNT))), {
+      token: import.meta.env.VITE_FCM_TOKEN
+    })
+    if (sent instanceof Error) throw sent
 
     data = await promise.instance
 

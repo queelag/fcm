@@ -1,28 +1,29 @@
 import { FetchError } from '@aracna/core'
-import { FCMRegistrationsAPIDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'
-import { FirebaseInstallationsAPIDefinitions } from '../definitions/apis/firebase-installations-api-definitions.js'
-import { ACGCheckinResponse, FCMRegistration, RegisterToFCMConfig } from '../definitions/interfaces.js'
-import { postACGCheckin, postACGRegister } from '../requests/acg-requests.js'
-import { postFCMRegistrations } from '../requests/fcm-registrations-requests.js'
+import { FcmRegistrationsApiDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'
+import { FirebaseInstallationsApiDefinitions } from '../definitions/apis/firebase-installations-api-definitions.js'
+import { AcgCheckinResponse, FcmRegistration, RegisterToFcmConfig } from '../definitions/interfaces.js'
+import { FunctionLogger } from '../loggers/function-logger.js'
+import { postAcgCheckin, postAcgRegister } from '../requests/acg-requests.js'
+import { postFcmRegistrations } from '../requests/fcm-registrations-requests.js'
 import { postFirebaseInstallations } from '../requests/firebase-installations-requests.js'
 
-export async function registerToFCM(config: RegisterToFCMConfig): Promise<FCMRegistration | Error> {
-  let checkin: ACGCheckinResponse | FetchError,
+export async function registerToFcm(config: RegisterToFcmConfig): Promise<FcmRegistration | Error> {
+  let checkin: AcgCheckinResponse | FetchError,
     token: string | FetchError,
-    installation: FirebaseInstallationsAPIDefinitions.InstallationsResponseData | FetchError,
-    registration: FCMRegistrationsAPIDefinitions.RegistrationsResponseData | FetchError,
-    result: FCMRegistration
+    installation: FirebaseInstallationsApiDefinitions.InstallationsResponseData | FetchError,
+    registration: FcmRegistrationsApiDefinitions.RegistrationsResponseData | FetchError,
+    result: FcmRegistration
 
-  checkin = await postACGCheckin(config.acg?.id, config.acg?.securityToken)
+  checkin = await postAcgCheckin(config.acg?.id, config.acg?.securityToken)
   if (checkin instanceof Error) return checkin
 
-  token = await postACGRegister(checkin.android_id, checkin.security_token, config.appID)
+  token = await postAcgRegister(checkin.android_id, checkin.security_token, config.appID)
   if (token instanceof Error) return token
 
   installation = await postFirebaseInstallations(config.firebase.appID, config.firebase.projectID, config.firebase.apiKey)
   if (installation instanceof Error) return installation
 
-  registration = await postFCMRegistrations(
+  registration = await postFcmRegistrations(
     config.firebase.projectID,
     config.firebase.apiKey,
     config.vapidKey,
@@ -40,6 +41,7 @@ export async function registerToFCM(config: RegisterToFCMConfig): Promise<FCMReg
     },
     token: registration.token
   }
+  FunctionLogger.info('registerToFcm', `The registration has been completed.`, result)
 
   return result
 }

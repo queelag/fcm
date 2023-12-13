@@ -1,17 +1,18 @@
 import { FetchError, encodeBase64URL, encodeText } from '@aracna/core'
 import { FirebaseInstallationsAPI } from '../apis/firebase-installations-api.js'
-import { FirebaseInstallationsAPIDefinitions } from '../definitions/apis/firebase-installations-api-definitions.js'
+import { FirebaseInstallationsApiDefinitions } from '../definitions/apis/firebase-installations-api-definitions.js'
+import { RequestLogger } from '../loggers/request-logger.js'
 import { generateFirebaseFID } from '../utils/firebase-utils.js'
 
 export async function postFirebaseInstallations(
   appID: string,
   projectID: string,
   apiKey: string
-): Promise<FirebaseInstallationsAPIDefinitions.InstallationsResponseData | FetchError> {
-  let body: FirebaseInstallationsAPIDefinitions.InstallationsRequestBody,
-    heartbeat: FirebaseInstallationsAPIDefinitions.Heartbeat,
+): Promise<FirebaseInstallationsApiDefinitions.InstallationsResponseData | FetchError> {
+  let body: FirebaseInstallationsApiDefinitions.InstallationsRequestBody,
+    heartbeat: FirebaseInstallationsApiDefinitions.Heartbeat,
     headers: HeadersInit,
-    response: FirebaseInstallationsAPIDefinitions.InstallationsResponse | FetchError
+    response: FirebaseInstallationsApiDefinitions.InstallationsResponse | FetchError
 
   body = {
     appId: appID,
@@ -24,6 +25,7 @@ export async function postFirebaseInstallations(
     heartbeats: [],
     version: 2
   }
+  RequestLogger.verbose('postFirebaseInstallations', `The heartbeat has been created.`, heartbeat)
 
   headers = {
     'x-firebase-client': encodeBase64URL(encodeText(JSON.stringify(heartbeat)), { pad: false }),
