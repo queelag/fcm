@@ -15,7 +15,7 @@ import {
   MTALK_GOOGLE_PORT
 } from '../definitions/constants.js'
 import { MCSState, MCSTag } from '../definitions/enums.js'
-import { AcgCheckinResponse, FcmClientACG, FcmClientData, FcmClientECDH, FcmClientEventMap, MessageData } from '../definitions/interfaces.js'
+import { AcgCheckinResponse, FcmClientACG, FcmClientData, FcmClientECDH, FcmClientEventMap, FcmClientMessageData } from '../definitions/interfaces.js'
 import { MCS } from '../definitions/proto/mcs.js'
 import { ClassLogger } from '../loggers/class-logger.js'
 import { MCSProto } from '../proto/mcs.js'
@@ -346,7 +346,7 @@ export class FcmClient extends EventEmitter<FcmClientEventMap> {
 
         break
       case MCSTag.DATA_MESSAGE_STANZA:
-        let message: MCS.DataMessageStanza, ecdh: ECDH, decrypted: Buffer, data: MessageData
+        let message: MCS.DataMessageStanza, ecdh: ECDH, decrypted: Buffer, data: FcmClientMessageData
 
         message = decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor))
         ClassLogger.info('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The bytes have been decoded.`, message)
