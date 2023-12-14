@@ -88,6 +88,9 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     await this.storage.set(this.storageKey, this.data, ['received'])
     ClassLogger.verbose('FcmClient', 'disconnect', 'The received pids have been stored.')
 
+    this.data = DEFAULT_FCM_CLIENT_DATA()
+    ClassLogger.verbose('FcmClient', 'disconnect', 'The data has been reset.', this.data)
+
     if (this.socket.closed) {
       return
     }
