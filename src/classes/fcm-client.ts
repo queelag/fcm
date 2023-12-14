@@ -8,7 +8,7 @@ import {
   DEFAULT_FCM_CLIENT_ACG,
   DEFAULT_FCM_CLIENT_DATA,
   DEFAULT_FCM_CLIENT_ECDH,
-  FCM_CLIENT_STORAGE_KEY,
+  DEFAULT_FCM_CLIENT_STORAGE_KEY,
   MCS_HEARTBEAT_PING_TIMEOUT_MS,
   MCS_SIZE_PACKET_MAX_LENGTH,
   MCS_SIZE_PACKET_MIN_LENGTH,
@@ -35,22 +35,27 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
   private storage: Storage
   storageKey: string
 
-  constructor(storage: Storage = MemoryStorage, storageKey: string = FCM_CLIENT_STORAGE_KEY) {
+  constructor(
+    acg: FcmClientACG = DEFAULT_FCM_CLIENT_ACG(),
+    ecdh: FcmClientECDH = DEFAULT_FCM_CLIENT_ECDH(),
+    storage: Storage = MemoryStorage,
+    storageKey: string = DEFAULT_FCM_CLIENT_STORAGE_KEY
+  ) {
     super()
 
-    this.acg = DEFAULT_FCM_CLIENT_ACG()
-    this.ecdh = DEFAULT_FCM_CLIENT_ECDH()
+    this.acg = acg
+    this.ecdh = ecdh
     this.data = DEFAULT_FCM_CLIENT_DATA()
     this.socket = new TLSSocket(new Socket())
     this.storage = storage
     this.storageKey = storageKey
   }
 
-  async connect(acg: FcmClientACG, ecdh: FcmClientECDH, options?: ConnectionOptions): Promise<void | FetchError | Error> {
+  async connect(acg?: FcmClientACG, ecdh?: FcmClientECDH, options?: ConnectionOptions): Promise<void | FetchError | Error> {
     let copy: void | Error, checkin: AcgCheckinResponse | FetchError
 
-    this.acg = acg
-    this.ecdh = ecdh
+    this.acg = acg ?? this.acg
+    this.ecdh = ecdh ?? this.ecdh
 
     copy = await this.storage.copy(this.storageKey, this.data)
     if (copy instanceof Error) return copy

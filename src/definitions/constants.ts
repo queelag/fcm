@@ -58,7 +58,7 @@ export const DEFAULT_FCM_CLIENT_DATA: () => FcmClientData = () => ({
   value: Buffer.alloc(0),
   version: 0
 })
-export const FCM_CLIENT_STORAGE_KEY: string = 'aracna_fcm_client'
+export const DEFAULT_FCM_CLIENT_STORAGE_KEY: string = 'aracna_fcm_client'
 
 /**
  * PROTOBUF
