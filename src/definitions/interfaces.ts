@@ -20,14 +20,17 @@ export interface FcmClientACG {
 }
 
 export interface FcmClientECDH {
-  privateKey: Uint8Array
-  salt: Uint8Array
+  privateKey: ArrayLike<number>
+  salt: ArrayLike<number>
 }
 
 export interface FcmClientData {
   cursor: number
   heartbeat?: MCS.HeartbeatAck
   login?: MCS.LoginResponse
+  received: {
+    pids: string[]
+  }
   size: {
     packets: number
   }
@@ -45,11 +48,11 @@ export interface FcmClientMessage extends MCS.DataMessageStanza {}
 export interface FcmClientMessageData<T extends FcmApiNotification = FcmApiNotification> {
   fcmMessageId: string
   from: string
-  notification: T
+  notification?: T
   priority: string
 }
 
-export interface FcmClientEventMap extends EventEmitterEventMap {
+export interface FcmClientEvents extends EventEmitterEventMap {
   close: () => any
   heartbeat: (heartbeat: FcmClientHeartbeat) => any
   iq: (iq: FcmClientIq) => any
