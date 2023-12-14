@@ -33,7 +33,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
   private ecdh: FcmClientECDH
   socket: TLSSocket
   private storage: Storage
-  storageKey: string
+  private storageKey: string
 
   constructor(
     acg: FcmClientACG = DEFAULT_FCM_CLIENT_ACG(),
