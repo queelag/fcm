@@ -24,7 +24,7 @@ describe('FcmClient', () => {
   })
 
   beforeEach(() => {
-    client = new FcmClient()
+    client = new FcmClient(acg, ecdh)
   })
 
   it('closes if a bad message is sent', async () => {
@@ -32,7 +32,7 @@ describe('FcmClient', () => {
 
     client.on('close', () => promise.resolve())
 
-    await client.connect(acg, ecdh)
+    await client.connect()
     client.socket.write(Buffer.from([MCSTag.CLOSE]))
     await promise.instance
 
@@ -42,7 +42,7 @@ describe('FcmClient', () => {
   it('connects', async () => {
     let connected: void | FetchError | Error
 
-    connected = await client.connect(acg, ecdh)
+    connected = await client.connect()
     if (connected instanceof Error) throw connected
 
     expect(connected).toBeUndefined()
@@ -53,7 +53,7 @@ describe('FcmClient', () => {
 
     client.on('heartbeat', () => promise.resolve())
 
-    await client.connect(acg, ecdh)
+    await client.connect()
     await promise.instance
 
     expect(promise.state).toBe(PromiseState.FULFILLED)
@@ -64,7 +64,7 @@ describe('FcmClient', () => {
 
     client.on('login', () => promise.resolve())
 
-    await client.connect(acg, ecdh)
+    await client.connect()
     await promise.instance
 
     expect(promise.state).toBe(PromiseState.FULFILLED)
@@ -75,7 +75,7 @@ describe('FcmClient', () => {
 
     client.on('iq', () => promise.resolve())
 
-    await client.connect(acg, ecdh)
+    await client.connect()
     await promise.instance
 
     expect(promise.state).toBe(PromiseState.FULFILLED)
@@ -91,7 +91,7 @@ describe('FcmClient', () => {
 
     client.on('message', (message: FcmClientMessage) => promise.resolve(message))
 
-    await client.connect(acg, ecdh)
+    await client.connect()
 
     sent = await sendFcmMessage(import.meta.env.VITE_FIREBASE_PROJECT_ID, JSON.parse(decodeText(decodeBase64(import.meta.env.VITE_GOOGLE_SERVICE_ACCOUNT))), {
       token: import.meta.env.VITE_FCM_TOKEN
@@ -110,7 +110,7 @@ describe('FcmClient', () => {
 
     client.on('message-data', (data: FcmClientMessageData) => promise.resolve(data))
 
-    await client.connect(acg, ecdh)
+    await client.connect()
 
     sent = await sendFcmMessage(import.meta.env.VITE_FIREBASE_PROJECT_ID, JSON.parse(decodeText(decodeBase64(import.meta.env.VITE_GOOGLE_SERVICE_ACCOUNT))), {
       token: import.meta.env.VITE_FCM_TOKEN
