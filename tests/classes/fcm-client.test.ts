@@ -2,7 +2,6 @@ import { DeferredPromise, FetchError, PromiseState, decodeBase64, decodeText } f
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { FcmApiError, FcmApiMessage, FcmClient, FcmClientACG, FcmClientECDH, FcmClientMessage, FcmClientMessageData, sendFcmMessage } from '../../src'
 import { MCSTag } from '../../src/definitions/enums'
-import { ClassLogger } from '../../src/loggers/class-logger'
 import { ACG_ID, ACG_SECURITY_TOKEN, ECDH_PRIVATE_KEY, ECDH_SALT } from '../definitions/constants'
 
 describe('FcmClient', () => {
@@ -85,9 +84,6 @@ describe('FcmClient', () => {
     let promise: DeferredPromise<FcmClientMessage>, sent: FcmApiMessage | FcmApiError, message: FcmClientMessage
 
     promise = new DeferredPromise()
-
-    ClassLogger.enable()
-    ClassLogger.setLevel('verbose')
 
     client.on('message', (message: FcmClientMessage) => promise.resolve(message))
 
