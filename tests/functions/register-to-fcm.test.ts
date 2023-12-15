@@ -35,8 +35,6 @@ describe('registerToFCM', () => {
     })
     if (registration instanceof Error) throw registration
 
-    console.log(registration)
-
     expect(registration.acg.id).toBe(ACG_ID)
     expect(registration.acg.securityToken).toBe(ACG_SECURITY_TOKEN)
     expect(registration.token).toBeTypeOf('string')
