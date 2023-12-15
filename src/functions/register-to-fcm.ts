@@ -7,7 +7,7 @@ import { postAcgCheckin, postAcgRegister } from '../requests/acg-requests.js'
 import { postFcmRegistrations } from '../requests/fcm-registrations-requests.js'
 import { postFirebaseInstallations } from '../requests/firebase-installations-requests.js'
 
-export async function registerToFcm(config: RegisterToFcmConfig): Promise<FcmRegistration | Error> {
+export async function registerToFCM(config: RegisterToFcmConfig): Promise<FcmRegistration | Error> {
   let checkin: AcgCheckinResponse | FetchError,
     token: string | FetchError,
     installation: FirebaseInstallationsApiDefinitions.InstallationsResponseData | FetchError,
@@ -41,7 +41,7 @@ export async function registerToFcm(config: RegisterToFcmConfig): Promise<FcmReg
     },
     token: registration.token
   }
-  FunctionLogger.info('registerToFcm', `The registration has been completed.`, result)
+  FunctionLogger.info('registerToFCM', `The registration has been completed.`, result)
 
   return result
 }

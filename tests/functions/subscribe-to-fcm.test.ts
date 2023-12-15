@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { FcmSubscription, subscribeToFcm } from '../../src'
-import { ACG_ID, ACG_SECURITY_TOKEN, APP_ID, ECDH_PUBLIC_KEY, ECDH_SALT } from '../definitions/constants'
+import { FcmSubscription, subscribeToFCM } from '../../src'
+import { ACG_ID, ACG_SECURITY_TOKEN, APP_ID, ECDH_PUBLIC_KEY, ECDH_SALT, FCM_SENDER_ID } from '../definitions/constants'
 
-describe('subscribeToFcm', () => {
+describe('subscribeToFCM', () => {
   it('works', async () => {
     let subscription: FcmSubscription | Error
 
-    subscription = await subscribeToFcm({
+    subscription = await subscribeToFCM({
       acg: {
         id: ACG_ID,
         securityToken: ACG_SECURITY_TOKEN
@@ -16,7 +16,7 @@ describe('subscribeToFcm', () => {
         publicKey: ECDH_PUBLIC_KEY,
         salt: ECDH_SALT
       },
-      senderID: import.meta.env.VITE_FCM_SENDER_ID
+      senderID: FCM_SENDER_ID
     })
     if (subscription instanceof Error) throw subscription
 

@@ -1,5 +1,5 @@
 import protobuf, { Root } from 'protobufjs'
-import { MCSState, MCSTag } from './enums.js'
+import { McsState, McsTag } from './enums.js'
 import { FcmClientACG, FcmClientData, FcmClientECDH } from './interfaces.js'
 
 /**
@@ -53,8 +53,8 @@ export const DEFAULT_FCM_CLIENT_DATA: () => FcmClientData = () => ({
   cursor: 0,
   received: { pids: [] },
   size: { packets: MCS_SIZE_PACKET_MIN_LENGTH },
-  state: MCSState.VERSION_TAG_AND_SIZE,
-  tag: MCSTag.LOGIN_RESPONSE,
+  state: McsState.VERSION_TAG_AND_SIZE,
+  tag: McsTag.LOGIN_RESPONSE,
   value: Buffer.alloc(0),
   version: 0
 })
