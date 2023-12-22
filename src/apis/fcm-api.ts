@@ -1,3 +1,3 @@
-import { API } from '@aracna/core'
+import { RestAPI } from '@aracna/core'
 
-export const FcmAPI = new API('https://fcm.googleapis.com')
+export const FcmAPI = new RestAPI('https://fcm.googleapis.com')
