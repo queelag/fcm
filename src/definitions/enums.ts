@@ -1,17 +1,17 @@
 export enum LoggerName {
-  CLASS = 'CLASS',
-  FUNCTION = 'FUNCTION',
-  REQUEST = 'REQUEST'
+  CLASS = 'FCM_CLASS',
+  FUNCTION = 'FCM_FUNCTION',
+  REQUEST = 'FCM_REQUEST'
 }
 
-export enum MCSState {
+export enum McsState {
   VERSION_TAG_AND_SIZE,
   TAG_AND_SIZE,
   SIZE,
   BYTES
 }
 
-export enum MCSTag {
+export enum McsTag {
   HEARTBEAT_PING,
   HEARTBEAT_ACK,
   LOGIN_REQUEST,

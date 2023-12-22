@@ -10,7 +10,7 @@ import { postFcmSubscribe } from '../requests/fcm-requests.js'
  *
  * Will stop working in June 2024.
  */
-export async function subscribeToFcm(config: SubscribeToFcmConfig): Promise<FcmSubscription | Error> {
+export async function subscribeToFCM(config: SubscribeToFcmConfig): Promise<FcmSubscription | Error> {
   let checkin: AcgCheckinResponse | FetchError,
     token: string | FetchError,
     fcm: FcmApiDefinitions.SubscribeResponseData | FetchError,
@@ -32,7 +32,7 @@ export async function subscribeToFcm(config: SubscribeToFcmConfig): Promise<FcmS
     },
     token: fcm.token
   }
-  FunctionLogger.info('subscribeToFcm', `The subscription has been completed.`, subscription)
+  FunctionLogger.info('subscribeToFCM', `The subscription has been completed.`, subscription)
 
   return subscription
 }

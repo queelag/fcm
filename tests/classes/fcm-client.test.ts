@@ -1,8 +1,17 @@
-import { DeferredPromise, FetchError, PromiseState, decodeBase64, decodeText } from '@aracna/core'
+import { DeferredPromise, FetchError, PromiseState } from '@aracna/core'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { FcmApiError, FcmApiMessage, FcmClient, FcmClientACG, FcmClientECDH, FcmClientMessage, FcmClientMessageData, sendFcmMessage } from '../../src'
-import { MCSTag } from '../../src/definitions/enums'
-import { ACG_ID, ACG_SECURITY_TOKEN, ECDH_PRIVATE_KEY, ECDH_SALT } from '../definitions/constants'
+import { McsTag } from '../../src/definitions/enums'
+import {
+  ACG_ID,
+  ACG_SECURITY_TOKEN,
+  ECDH_PRIVATE_KEY,
+  ECDH_SALT,
+  FCM_SENDER_ID,
+  FCM_TOKEN,
+  FIREBASE_PROJECT_ID,
+  GOOGLE_SERVICE_ACCOUNT
+} from '../definitions/constants'
 
 describe('FcmClient', () => {
   let acg: FcmClientACG, ecdh: FcmClientECDH, client: FcmClient
@@ -32,7 +41,7 @@ describe('FcmClient', () => {
     client.on('close', () => promise.resolve())
 
     await client.connect()
-    client.socket.write(Buffer.from([MCSTag.CLOSE]))
+    client.socket.write(Buffer.from([McsTag.CLOSE]))
     await promise.instance
 
     expect(promise.state).toBe(PromiseState.FULFILLED)
@@ -89,9 +98,7 @@ describe('FcmClient', () => {
 
     await client.connect()
 
-    sent = await sendFcmMessage(import.meta.env.VITE_FIREBASE_PROJECT_ID, JSON.parse(decodeText(decodeBase64(import.meta.env.VITE_GOOGLE_SERVICE_ACCOUNT))), {
-      token: import.meta.env.VITE_FCM_TOKEN
-    })
+    sent = await sendFcmMessage(FIREBASE_PROJECT_ID, GOOGLE_SERVICE_ACCOUNT, { token: FCM_TOKEN })
     if (sent instanceof Error) throw sent
 
     message = await promise.instance
@@ -108,13 +115,38 @@ describe('FcmClient', () => {
 
     await client.connect()
 
-    sent = await sendFcmMessage(import.meta.env.VITE_FIREBASE_PROJECT_ID, JSON.parse(decodeText(decodeBase64(import.meta.env.VITE_GOOGLE_SERVICE_ACCOUNT))), {
-      token: import.meta.env.VITE_FCM_TOKEN
-    })
+    sent = await sendFcmMessage(FIREBASE_PROJECT_ID, GOOGLE_SERVICE_ACCOUNT, { token: FCM_TOKEN })
     if (sent instanceof Error) throw sent
 
     data = await promise.instance
 
-    expect(data.from).toBe(import.meta.env.VITE_FCM_SENDER_ID)
+    expect(data.from).toBe(FCM_SENDER_ID)
   }, 20000)
+
+  it('logins multiple times with the same client instance', async () => {
+    let promise: DeferredPromise<void> = new DeferredPromise()
+
+    client.on('login', () => promise.resolve())
+
+    await client.connect()
+    await promise.instance
+
+    expect(promise.state).toBe(PromiseState.FULFILLED)
+
+    promise = new DeferredPromise()
+
+    await client.disconnect()
+    await client.connect()
+    await promise.instance
+
+    expect(promise.state).toBe(PromiseState.FULFILLED)
+
+    promise = new DeferredPromise()
+
+    await client.disconnect(new Error())
+    await client.connect()
+    await promise.instance
+
+    expect(promise.state).toBe(PromiseState.FULFILLED)
+  })
 })

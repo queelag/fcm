@@ -1,5 +1,5 @@
 import { FcmApiDefinitions } from './apis/fcm-api-definitions.js'
-import { MCSState, MCSTag } from './enums.js'
+import { McsState, McsTag } from './enums.js'
 import { Checkin } from './proto/checkin.js'
 import { MCS } from './proto/mcs.js'
 import { FcmApiNotification } from './types.js'
@@ -34,8 +34,8 @@ export interface FcmClientData {
   size: {
     packets: number
   }
-  state: MCSState
-  tag: MCSTag
+  state: McsState
+  tag: McsTag
   value: Buffer
   version: number
 }

@@ -1,6 +1,9 @@
 /// <reference types="vitest/import-meta" />
 
 interface ImportMetaEnv {
+  readonly VITE_ACG_ID: string
+  readonly VITE_ACG_SECURITY_TOKEN: string
+  readonly VITE_ACG_TOKEN: string
   readonly VITE_FCM_SENDER_ID: string
   readonly VITE_FCM_SERVER_KEY: string
   readonly VITE_FCM_TOKEN: string
