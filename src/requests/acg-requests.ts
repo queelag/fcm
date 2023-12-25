@@ -3,19 +3,19 @@ import { AcgAPI } from '../apis/acg-api.js'
 import { AcgApiDefinitions } from '../definitions/apis/acg-api-definitions.js'
 import { ACG_REGISTER_CHROME_VERSION, ACG_REGISTER_SENDER } from '../definitions/constants.js'
 import { AcgCheckinResponse } from '../definitions/interfaces.js'
-import { AndroidCheckin } from '../definitions/proto/android-checkin.js'
-import { Checkin } from '../definitions/proto/checkin.js'
+import { AndroidCheckinDefinitions } from '../definitions/proto/android-checkin-definitions.js'
+import { CheckinDefinitions } from '../definitions/proto/checkin-definitions.js'
 import { RequestLogger } from '../loggers/request-logger.js'
-import { CheckinProto } from '../proto/checkin.js'
+import { CheckinProto } from '../proto/checkin-proto.js'
 import { parseLong } from '../utils/long-utils.js'
 import { decodeProtoType } from '../utils/proto-utils.js'
 
 export async function postAcgCheckin(id: bigint = 0n, securityToken: bigint = 0n): Promise<AcgCheckinResponse | FetchError> {
-  let request: Partial<Checkin.AndroidCheckinRequest>,
+  let request: Partial<CheckinDefinitions.AndroidCheckinRequest>,
     body: Uint8Array,
     headers: HeadersInit,
     response: AcgApiDefinitions.CheckinResponse | FetchError,
-    data: Checkin.AndroidCheckinResponse,
+    data: CheckinDefinitions.AndroidCheckinResponse,
     result: AcgCheckinResponse
 
   request = {
@@ -23,14 +23,14 @@ export async function postAcgCheckin(id: bigint = 0n, securityToken: bigint = 0n
     checkin: {
       cell_operator: '',
       chrome_build: {
-        channel: AndroidCheckin.ChromeBuildProtoChannel.CHANNEL_STABLE,
+        channel: AndroidCheckinDefinitions.ChromeBuildProtoChannel.CHANNEL_STABLE,
         chrome_version: ACG_REGISTER_CHROME_VERSION,
-        platform: AndroidCheckin.ChromeBuildProtoPlatform.PLATFORM_MAC
+        platform: AndroidCheckinDefinitions.ChromeBuildProtoPlatform.PLATFORM_MAC
       },
       last_checkin_msec: parseLong(0n),
       roaming: '',
       sim_operator: '',
-      type: AndroidCheckin.DeviceType.DEVICE_CHROME_BROWSER,
+      type: AndroidCheckinDefinitions.DeviceType.DEVICE_CHROME_BROWSER,
       user_number: 0
     },
     desired_build: '',

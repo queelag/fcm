@@ -19,43 +19,62 @@ import {
   MTALK_GOOGLE_PORT
 } from '../definitions/constants.js'
 import { McsState, McsTag } from '../definitions/enums.js'
-import { AcgCheckinResponse, FcmClientACG, FcmClientData, FcmClientECDH, FcmClientEvents, FcmClientMessageData } from '../definitions/interfaces.js'
-import { MCS } from '../definitions/proto/mcs.js'
+import {
+  AcgCheckinResponse,
+  FcmClientACG,
+  FcmClientData,
+  FcmClientECDH,
+  FcmClientEvents,
+  FcmClientInit,
+  FcmClientMessageData
+} from '../definitions/interfaces.js'
+import { McsDefinitions } from '../definitions/proto/mcs-definitions.js'
 import { ClassLogger } from '../loggers/class-logger.js'
-import { MCSProto } from '../proto/mcs.js'
+import { MCSProto } from '../proto/mcs-proto.js'
 import { postAcgCheckin } from '../requests/acg-requests.js'
 import { parseLong } from '../utils/long-utils.js'
 import { decodeProtoType } from '../utils/proto-utils.js'
 
+/**
+ * The FcmClient class establishes a TLS socket connection with Google MTalk and handles the communication.
+ *
+ * - The client needs a valid ACG ID and security token to login, they can be obtained with the `registerToFCM` function.
+ * - The client needs a valid ECDH private key and salt to decrypt the messages, they can be obtained with the `createFcmECDH` and `createFcmSalt` functions.
+ * - The client will store the received persistent IDs in the storage. By default the storage is an in-memory storage, it is reccomended to use a persistent storage.
+ * - The client will perform a heartbeat every 5 seconds to avoid losing the socket connection.
+ *
+ * Events:
+ *
+ * - The client will emit a `close` event when a close message is received.
+ * - The client will emit a `heartbeat` event when a heartbeat is received.
+ * - The client will emit a `iq` event when an IQ stanza is received.
+ * - The client will emit a `login` event when a login response is received.
+ * - The client will emit a `message` event when a message is received.
+ * - The client will emit a `message-data` event when a message is received and decrypted.
+ *
+ * [Aracna Reference](https://aracna.dariosechi.it/fcm/classes/fcm-client)
+ */
 export class FcmClient extends EventEmitter<FcmClientEvents> {
-  private acg: FcmClientACG
-  private data: FcmClientData
-  private ecdh: FcmClientECDH
-  socket: TLSSocket
-  private storage: Storage
-  private storageKey: string
+  protected readonly acg: FcmClientACG
+  protected data: FcmClientData
+  protected readonly ecdh: FcmClientECDH
+  protected socket: TLSSocket
+  protected readonly storage: Storage
+  protected readonly storageKey: string
 
-  constructor(
-    acg: FcmClientACG = DEFAULT_FCM_CLIENT_ACG(),
-    ecdh: FcmClientECDH = DEFAULT_FCM_CLIENT_ECDH(),
-    storage: Storage = MemoryStorage,
-    storageKey: string = DEFAULT_FCM_CLIENT_STORAGE_KEY
-  ) {
+  constructor(init?: FcmClientInit) {
     super()
 
-    this.acg = acg
-    this.ecdh = ecdh
+    this.acg = init?.acg ?? DEFAULT_FCM_CLIENT_ACG()
+    this.ecdh = init?.ecdh ?? DEFAULT_FCM_CLIENT_ECDH()
     this.data = DEFAULT_FCM_CLIENT_DATA()
     this.socket = new TLSSocket(new Socket())
-    this.storage = storage
-    this.storageKey = storageKey
+    this.storage = init?.storage?.instance ?? MemoryStorage
+    this.storageKey = init?.storage?.key ?? DEFAULT_FCM_CLIENT_STORAGE_KEY
   }
 
-  async connect(acg?: FcmClientACG, ecdh?: FcmClientECDH, options?: ConnectionOptions): Promise<void | FetchError | Error> {
+  async connect(options?: ConnectionOptions): Promise<void | FetchError | Error> {
     let copy: void | Error, checkin: AcgCheckinResponse | FetchError
-
-    this.acg = acg ?? this.acg
-    this.ecdh = ecdh ?? this.ecdh
 
     copy = await this.storage.copy(this.storageKey, this.data)
     if (copy instanceof Error) return copy
@@ -98,13 +117,13 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     return promise.instance
   }
 
-  private login(): void {
-    let request: MCS.LoginRequest, encoded: Uint8Array, buffer: Buffer
+  protected login(): void {
+    let request: McsDefinitions.LoginRequest, encoded: Uint8Array, buffer: Buffer
 
     request = {
       account_id: parseLong(0n),
       adaptive_heartbeat: false,
-      auth_service: MCS.LoginRequestAuthService.ANDROID_ID,
+      auth_service: McsDefinitions.LoginRequestAuthService.ANDROID_ID,
       auth_token: this.acg.securityToken.toString(),
       client_event: [],
       device_id: `android-${this.acg.id.toString(16)}`,
@@ -135,8 +154,8 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     ClassLogger.info('FcmClient', 'onSocketReady', `The login request has been sent.`)
   }
 
-  private heartbeat(): void {
-    let ping: MCS.HeartbeatPing, encoded: Uint8Array, buffer: Buffer
+  protected heartbeat(): void {
+    let ping: McsDefinitions.HeartbeatPing, encoded: Uint8Array, buffer: Buffer
 
     ping = {
       stream_id: this.data.heartbeat?.stream_id ?? this.data.login?.stream_id ?? 0,
@@ -155,14 +174,14 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     ClassLogger.info('FcmClient', 'onHeartbeat', 'HeartbeatPing', `The heartbeat ping has been sent.`)
   }
 
-  private prepareForNextMessage(): void {
+  protected prepareForNextMessage(): void {
     this.data.cursor = 0
     this.data.size.packets = MCS_SIZE_PACKET_MIN_LENGTH
     this.data.state = McsState.TAG_AND_SIZE
     this.data.value = Buffer.alloc(0)
   }
 
-  private onSocketClose = (error: boolean): void => {
+  protected onSocketClose = (error: boolean): void => {
     if (error) {
       return ClassLogger.error('FcmClient', 'onSocketClose', 'The socket has been closed with errors.', [error])
     }
@@ -170,11 +189,11 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     ClassLogger.info('FcmClient', 'onSocketClose', 'The socket has been closed.')
   }
 
-  private onSocketConnect = (): void => {
+  protected onSocketConnect = (): void => {
     ClassLogger.info('FcmClient', 'onSocketConnect', 'The socket has been connected.')
   }
 
-  private onSocketData = (data: Buffer): void => {
+  protected onSocketData = (data: Buffer): void => {
     this.data.value = Buffer.concat([this.data.value, data])
     ClassLogger.verbose('FcmClient', 'onSocketData', data, this.data.value, [data.length, this.data.value.length])
 
@@ -210,7 +229,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     }
   }
 
-  private onSocketDataVersion = (): void => {
+  protected onSocketDataVersion = (): void => {
     this.data.version = this.data.value.readUInt8(0)
     ClassLogger.info('FcmClient', 'onSocketDataVersion', this.data.version)
 
@@ -228,7 +247,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     ClassLogger.info('FcmClient', 'onSocketDataVersion', `Setting state to TAG_AND_SIZE.`, [this.data.state])
   }
 
-  private onSocketDataTag = (): void => {
+  protected onSocketDataTag = (): void => {
     this.data.tag = this.data.value.readUInt8(this.data.cursor)
     ClassLogger.info('FcmClient', 'onSocketDataTag', [this.data.tag, McsTag[this.data.tag]])
 
@@ -239,7 +258,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     ClassLogger.info('FcmClient', 'onSocketDataTag', `Setting state to SIZE.`, [this.data.state])
   }
 
-  private onSocketDataSize = (): void => {
+  protected onSocketDataSize = (): void => {
     let decodable: string | null | Error, decryptable: void | undefined | Error
 
     if (this.data.value.length - this.data.cursor < MCS_SIZE_PACKET_MIN_LENGTH) {
@@ -280,13 +299,16 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         )
 
         decryptable = tc(() => {
-          let message: MCS.DataMessageStanza = decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor + this.data.size.packets))
+          let message: McsDefinitions.DataMessageStanza = decodeProtoType(
+            MCSProto.DataMessageStanza,
+            this.data.value.subarray(this.data.cursor + this.data.size.packets)
+          )
 
           decrypt(Buffer.from(message.raw_data), {
             authSecret: encodeBase64(this.ecdh.salt),
-            dh: message.app_data.find((data: MCS.AppData) => data.key === 'crypto-key')?.value.slice(3),
+            dh: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'crypto-key')?.value.slice(3),
             privateKey: createECDH('prime256v1').setPrivateKey(new Uint8Array(this.ecdh.privateKey)),
-            salt: message.app_data.find((data: MCS.AppData) => data.key === 'encryption')?.value.slice(5),
+            salt: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'encryption')?.value.slice(5),
             version: 'aesgcm'
           })
         }, false)
@@ -316,10 +338,10 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     this.onSocketDataBytes()
   }
 
-  private onSocketDataBytes = (): void => {
+  protected onSocketDataBytes = (): void => {
     switch (this.data.tag) {
       case McsTag.HEARTBEAT_ACK:
-        let heartbeat: MCS.HeartbeatAck
+        let heartbeat: McsDefinitions.HeartbeatAck
 
         heartbeat = decodeProtoType(MCSProto.HeartbeatAck, this.data.value.subarray(this.data.cursor))
         ClassLogger.info('FcmClient', 'onSocketDataBytes', 'HEARTBEAT_ACK', `The bytes have been decoded.`, heartbeat)
@@ -334,7 +356,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
 
         break
       case McsTag.LOGIN_RESPONSE:
-        let login: MCS.LoginResponse
+        let login: McsDefinitions.LoginResponse
 
         login = decodeProtoType(MCSProto.LoginResponse, this.data.value.subarray(this.data.cursor))
         ClassLogger.info('FcmClient', 'onSocketDataBytes', 'LOGIN_RESPONSE', `The bytes have been decoded.`, login)
@@ -360,7 +382,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
 
         break
       case McsTag.CLOSE:
-        let close: MCS.Close
+        let close: McsDefinitions.Close
 
         close = decodeProtoType(MCSProto.Close, this.data.value.subarray(this.data.cursor))
         ClassLogger.info('FcmClient', 'onSocketDataBytes', 'CLOSE', `The bytes have been decoded.`, close)
@@ -370,7 +392,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
 
         break
       case McsTag.IQ_STANZA:
-        let iq: MCS.IqStanza
+        let iq: McsDefinitions.IqStanza
 
         iq = decodeProtoType(MCSProto.IqStanza, this.data.value.subarray(this.data.cursor))
         ClassLogger.info('FcmClient', 'onSocketDataBytes', 'IQ_STANZA', `The bytes have been decoded.`, iq)
@@ -380,7 +402,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
 
         break
       case McsTag.DATA_MESSAGE_STANZA:
-        let message: MCS.DataMessageStanza, ecdh: ECDH, decrypted: Buffer, data: FcmClientMessageData
+        let message: McsDefinitions.DataMessageStanza, ecdh: ECDH, decrypted: Buffer, data: FcmClientMessageData
 
         message = decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor))
         ClassLogger.info('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The bytes have been decoded.`, message)
@@ -399,9 +421,9 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
 
         decrypted = decrypt(Buffer.from(message.raw_data), {
           authSecret: encodeBase64(this.ecdh.salt),
-          dh: message.app_data.find((data: MCS.AppData) => data.key === 'crypto-key')?.value.slice(3),
+          dh: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'crypto-key')?.value.slice(3),
           privateKey: ecdh,
-          salt: message.app_data.find((data: MCS.AppData) => data.key === 'encryption')?.value.slice(5),
+          salt: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'encryption')?.value.slice(5),
           version: 'aesgcm'
         })
         ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message data has been decrypted.`, decrypted)
@@ -422,46 +444,113 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     ClassLogger.verbose('FcmClient', 'onSocketDataBytes', `Ready for the next message.`)
   }
 
-  private onSocketDrain = (): void => {
+  protected onSocketDrain = (): void => {
     ClassLogger.verbose('FcmClient', 'onSocketDrain', 'The socket has been drained.')
   }
 
-  private onSocketEnd = (): void => {
+  protected onSocketEnd = (): void => {
     ClassLogger.info('FcmClient', 'onSocketEnd', 'The socket connection has ended.')
   }
 
-  private onSocketError = (error: Error): void => {
+  protected onSocketError = (error: Error): void => {
     ClassLogger.error('FcmClient', 'onSocketError', error)
   }
 
-  private onSocketKeylog = (line: Buffer): void => {
+  protected onSocketKeylog = (line: Buffer): void => {
     ClassLogger.verbose('FcmClient', 'onSocketKeylog', line)
   }
 
-  private onSocketLookup = (error: Error, address: string, family: string, host: string): void => {
+  protected onSocketLookup = (error: Error, address: string, family: string, host: string): void => {
     ClassLogger.verbose('FcmClient', 'onSocketLookup', [error, address, family, host])
   }
 
-  private onSocketOCSPResponse = (response: Buffer): void => {
+  protected onSocketOCSPResponse = (response: Buffer): void => {
     ClassLogger.verbose('FcmClient', 'onSocketOCSPResponse', response)
   }
 
-  private onSocketReady = (): void => {
+  protected onSocketReady = (): void => {
     ClassLogger.info('FcmClient', 'onSocketReady', 'The socket is ready.')
 
     this.login()
     ClassLogger.verbose('FcmClient', 'onSocketReady', 'The login request has been sent.')
   }
 
-  private onSocketSecureConnect = (): void => {
+  protected onSocketSecureConnect = (): void => {
     ClassLogger.verbose('FcmClient', 'onSocketSecureConnect', 'The socket has been securely connected.')
   }
 
-  private onSocketSession = (session: Buffer): void => {
+  protected onSocketSession = (session: Buffer): void => {
     ClassLogger.verbose('FcmClient', 'onSocketSession', session)
   }
 
-  private onSocketTimeout = (): void => {
+  protected onSocketTimeout = (): void => {
     ClassLogger.warn('FcmClient', 'onSocketTimeout', 'The socket has timed out.')
+  }
+
+  /**
+   * Returns the ACG ID.
+   */
+  getAcgID(): bigint {
+    return this.acg.id
+  }
+
+  /**
+   * Returns the ACG security token.
+   */
+  getAcgSecurityToken(): bigint {
+    return this.acg.securityToken
+  }
+
+  /**
+   * Returns the ECDH private key.
+   */
+  getEcdhPrivateKey(): ArrayLike<number> {
+    return this.ecdh.privateKey
+  }
+
+  /**
+   * Returns the ECDH public key.
+   */
+  getEcdhSalt(): ArrayLike<number> {
+    return this.ecdh.salt
+  }
+
+  /**
+   * Returns the TLS socket.
+   */
+  getSocket(): TLSSocket {
+    return this.socket
+  }
+
+  /**
+   * Sets the ACG ID.
+   */
+  setAcgID(id: bigint): this {
+    this.acg.id = id
+    return this
+  }
+
+  /**
+   * Sets the ACG security token.
+   */
+  setAcgSecurityToken(securityToken: bigint): this {
+    this.acg.securityToken = securityToken
+    return this
+  }
+
+  /**
+   * Sets the ECDH private key.
+   */
+  setEcdhPrivateKey(privateKey: ArrayLike<number>): this {
+    this.ecdh.privateKey = privateKey
+    return this
+  }
+
+  /**
+   * Sets the ECDH public key.
+   */
+  setEcdhSalt(salt: ArrayLike<number>): this {
+    this.ecdh.salt = salt
+    return this
   }
 }

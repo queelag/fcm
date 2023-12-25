@@ -32,7 +32,7 @@ describe('FcmClient', () => {
   })
 
   beforeEach(() => {
-    client = new FcmClient(acg, ecdh)
+    client = new FcmClient({ acg, ecdh })
   })
 
   it('closes if a bad message is sent', async () => {
@@ -41,7 +41,7 @@ describe('FcmClient', () => {
     client.on('close', () => promise.resolve())
 
     await client.connect()
-    client.socket.write(Buffer.from([McsTag.CLOSE]))
+    client.getSocket().write(Buffer.from([McsTag.CLOSE]))
     await promise.instance
 
     expect(promise.state).toBe(PromiseState.FULFILLED)

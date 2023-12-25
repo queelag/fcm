@@ -1,8 +1,8 @@
 import protobuf from 'protobufjs'
-import JSON from '../assets/mcs.json'
+import { MCS_PROTO_JSON } from '../assets/mcs-proto-json.js'
 import { PROTOBUF_ROOT } from '../definitions/constants.js'
 
-protobuf.Root.fromJSON(JSON, PROTOBUF_ROOT)
+protobuf.Root.fromJSON(MCS_PROTO_JSON, PROTOBUF_ROOT)
 
 export const MCSProto = {
   HeartbeatPing: PROTOBUF_ROOT.lookupType('mcs_proto.HeartbeatPing'),

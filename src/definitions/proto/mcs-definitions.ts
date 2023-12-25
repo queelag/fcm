@@ -2,7 +2,7 @@
 import Long from 'long'
 import _m0 from 'protobufjs/minimal.js'
 
-export namespace MCS {
+export namespace McsDefinitions {
   export const protobufPackage = 'mcs_proto'
 
   /** TAG: 0 */

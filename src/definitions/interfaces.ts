@@ -1,10 +1,11 @@
+import { Storage } from '@aracna/core'
 import { FcmApiDefinitions } from './apis/fcm-api-definitions.js'
 import { McsState, McsTag } from './enums.js'
-import { Checkin } from './proto/checkin.js'
-import { MCS } from './proto/mcs.js'
+import { CheckinDefinitions } from './proto/checkin-definitions.js'
+import { McsDefinitions } from './proto/mcs-definitions.js'
 import { FcmApiNotification } from './types.js'
 
-export interface AcgCheckinResponse extends Omit<Checkin.AndroidCheckinResponse, 'android_id' | 'security_token'> {
+export interface AcgCheckinResponse extends Omit<CheckinDefinitions.AndroidCheckinResponse, 'android_id' | 'security_token'> {
   android_id: bigint
   security_token: bigint
 }
@@ -26,8 +27,8 @@ export interface FcmClientECDH {
 
 export interface FcmClientData {
   cursor: number
-  heartbeat?: MCS.HeartbeatAck
-  login?: MCS.LoginResponse
+  heartbeat?: McsDefinitions.HeartbeatAck
+  login?: McsDefinitions.LoginResponse
   received: {
     pids: string[]
   }
@@ -40,10 +41,20 @@ export interface FcmClientData {
   version: number
 }
 
-export interface FcmClientHeartbeat extends MCS.HeartbeatAck {}
-export interface FcmClientIq extends MCS.IqStanza {}
-export interface FcmClientLogin extends MCS.LoginResponse {}
-export interface FcmClientMessage extends MCS.DataMessageStanza {}
+export interface FcmClientHeartbeat extends McsDefinitions.HeartbeatAck {}
+export interface FcmClientIq extends McsDefinitions.IqStanza {}
+
+export interface FcmClientInit {
+  acg?: FcmClientACG
+  ecdh?: FcmClientECDH
+  storage?: {
+    instance?: Storage
+    key?: string
+  }
+}
+
+export interface FcmClientLogin extends McsDefinitions.LoginResponse {}
+export interface FcmClientMessage extends McsDefinitions.DataMessageStanza {}
 
 export interface FcmClientMessageData<T extends FcmApiNotification = FcmApiNotification> {
   fcmMessageId: string

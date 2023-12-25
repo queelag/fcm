@@ -2,7 +2,7 @@
 import Long from 'long'
 import _m0 from 'protobufjs/minimal.js'
 
-export namespace AndroidCheckin {
+export namespace AndroidCheckinDefinitions {
   export const protobufPackage = 'checkin_proto'
 
   /**

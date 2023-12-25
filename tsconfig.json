@@ -1,14 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig.json",
   "compilerOptions": {
-    "allowJs": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "esModuleInterop": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "dist",
-    "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "ESNext"

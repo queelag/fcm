@@ -1,9 +1,9 @@
 /* eslint-disable */
 import Long from 'long'
 import _m0 from 'protobufjs/minimal.js'
-import { AndroidCheckin } from './android-checkin.js'
+import type { AndroidCheckinDefinitions } from './android-checkin-definitions.js'
 
-export namespace Checkin {
+export namespace CheckinDefinitions {
   export const protobufPackage = 'checkin_proto'
 
   /** A concrete name/value pair sent to the device's Gservices database. */
@@ -50,7 +50,7 @@ export namespace Checkin {
     digest: string
     /** Current locale in standard (xx_XX) format */
     locale: string
-    checkin: AndroidCheckin.AndroidCheckinProto | undefined
+    checkin: AndroidCheckinDefinitions.AndroidCheckinProto | undefined
     /** DEPRECATED, see AndroidCheckinProto.requested_group */
     desired_build: string
     /** Blob of data from the Market app to be passed to Market API server */
