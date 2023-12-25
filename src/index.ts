@@ -1,6 +1,6 @@
 export * from './classes/fcm-client.js'
 export { LoggerName as FcmLoggerName } from './definitions/enums.js'
-export {
+export type {
   FcmApiError,
   FcmApiMessage,
   FcmClientACG,
@@ -16,7 +16,7 @@ export {
   RegisterToFcmConfig,
   SubscribeToFcmConfig
 } from './definitions/interfaces.js'
-export { FcmApiMessageWithTarget, FcmApiNotification } from './definitions/types.js'
+export type { FcmApiMessageWithTarget, FcmApiNotification } from './definitions/types.js'
 export * from './functions/register-to-fcm.js'
 export * from './functions/send-fcm-message.js'
 export * from './functions/subscribe-to-fcm.js'
