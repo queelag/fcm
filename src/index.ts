@@ -4,7 +4,7 @@ export type {
   FcmApiError,
   FcmApiMessage,
   FcmClientACG,
-  FcmClientECDH,
+  FcmClientECE,
   FcmClientHeartbeat,
   FcmClientIq,
   FcmClientLogin,

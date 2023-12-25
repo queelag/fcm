@@ -1,20 +1,11 @@
 import { DeferredPromise, FetchError, PromiseState } from '@aracna/core'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { FcmApiError, FcmApiMessage, FcmClient, FcmClientACG, FcmClientECDH, FcmClientMessage, FcmClientMessageData, sendFcmMessage } from '../../src'
+import { FcmApiError, FcmApiMessage, FcmClient, FcmClientACG, FcmClientECE, FcmClientMessage, FcmClientMessageData, sendFcmMessage } from '../../src'
 import { McsTag } from '../../src/definitions/enums'
-import {
-  ACG_ID,
-  ACG_SECURITY_TOKEN,
-  ECDH_PRIVATE_KEY,
-  ECDH_SALT,
-  FCM_SENDER_ID,
-  FCM_TOKEN,
-  FIREBASE_PROJECT_ID,
-  GOOGLE_SERVICE_ACCOUNT
-} from '../definitions/constants'
+import { ACG_ID, ACG_SECURITY_TOKEN, ECE_AUTH_SECRET, ECE_PRIVATE_KEY, FCM_SENDER_ID, FCM_TOKEN, GOOGLE_SERVICE_ACCOUNT } from '../definitions/constants'
 
 describe('FcmClient', () => {
-  let acg: FcmClientACG, ecdh: FcmClientECDH, client: FcmClient
+  let acg: FcmClientACG, ece: FcmClientECE, client: FcmClient
 
   afterEach(async () => {
     await client.disconnect()
@@ -25,14 +16,14 @@ describe('FcmClient', () => {
       id: ACG_ID,
       securityToken: ACG_SECURITY_TOKEN
     }
-    ecdh = {
-      privateKey: ECDH_PRIVATE_KEY,
-      salt: ECDH_SALT
+    ece = {
+      authSecret: ECE_AUTH_SECRET,
+      privateKey: ECE_PRIVATE_KEY
     }
   })
 
   beforeEach(() => {
-    client = new FcmClient({ acg, ecdh })
+    client = new FcmClient({ acg, ece })
   })
 
   it('closes if a bad message is sent', async () => {
@@ -98,7 +89,7 @@ describe('FcmClient', () => {
 
     await client.connect()
 
-    sent = await sendFcmMessage(FIREBASE_PROJECT_ID, GOOGLE_SERVICE_ACCOUNT, { token: FCM_TOKEN })
+    sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, { token: FCM_TOKEN })
     if (sent instanceof Error) throw sent
 
     message = await promise.instance
@@ -115,7 +106,7 @@ describe('FcmClient', () => {
 
     await client.connect()
 
-    sent = await sendFcmMessage(FIREBASE_PROJECT_ID, GOOGLE_SERVICE_ACCOUNT, { token: FCM_TOKEN })
+    sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, { token: FCM_TOKEN })
     if (sent instanceof Error) throw sent
 
     data = await promise.instance

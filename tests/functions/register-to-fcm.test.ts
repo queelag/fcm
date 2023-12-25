@@ -4,8 +4,8 @@ import {
   ACG_ID,
   ACG_SECURITY_TOKEN,
   APP_ID,
-  ECDH_PUBLIC_KEY,
-  ECDH_SALT,
+  ECE_AUTH_SECRET,
+  ECE_PUBLIC_KEY,
   FIREBASE_API_KEY,
   FIREBASE_APP_ID,
   FIREBASE_PROJECT_ID,
@@ -22,9 +22,9 @@ describe('registerToFCM', () => {
         securityToken: ACG_SECURITY_TOKEN
       },
       appID: APP_ID,
-      ecdh: {
-        publicKey: ECDH_PUBLIC_KEY,
-        salt: ECDH_SALT
+      ece: {
+        authSecret: ECE_AUTH_SECRET,
+        publicKey: ECE_PUBLIC_KEY
       },
       firebase: {
         apiKey: FIREBASE_API_KEY,

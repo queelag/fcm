@@ -7,6 +7,19 @@ import { postAcgCheckin, postAcgRegister } from '../requests/acg-requests.js'
 import { postFcmRegistrations } from '../requests/fcm-registrations-requests.js'
 import { postFirebaseInstallations } from '../requests/firebase-installations-requests.js'
 
+/**
+ * Registers a device to Firebase Cloud Messaging.
+ * Optionally registers with already existing ACG ID and ACG security token.
+ *
+ * - The app ID is the package name of the app.
+ * - The ECE auth secret and ECE public key must be generated beforehand with the `createFcmECDH` and `generateFcmAuthSecret` functions. The auth secret and ECDH keys must be stored.
+ * - The Firebase API key, Firebase app ID and Firebase project ID can be found in the Firebase console.
+ * - The VAPID key can be found in the Firebase console.
+ *
+ * Returns the ACG ID, ACG security token and FCM token, which must be stored.
+ *
+ * [Aracna Reference](https://aracna.dariosechi.it/fcm/functions/register-to-fcm)
+ */
 export async function registerToFCM(config: RegisterToFcmConfig): Promise<FcmRegistration | Error> {
   let checkin: AcgCheckinResponse | FetchError,
     token: string | FetchError,
@@ -27,9 +40,9 @@ export async function registerToFCM(config: RegisterToFcmConfig): Promise<FcmReg
     config.firebase.projectID,
     config.firebase.apiKey,
     config.vapidKey,
-    config.ecdh.salt,
+    config.ece.authSecret,
     installation.authToken.token,
-    config.ecdh.publicKey,
+    config.ece.publicKey,
     token
   )
   if (registration instanceof Error) return registration

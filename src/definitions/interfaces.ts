@@ -20,9 +20,9 @@ export interface FcmClientACG {
   securityToken: bigint
 }
 
-export interface FcmClientECDH {
+export interface FcmClientECE {
+  authSecret: ArrayLike<number>
   privateKey: ArrayLike<number>
-  salt: ArrayLike<number>
 }
 
 export interface FcmClientData {
@@ -46,7 +46,7 @@ export interface FcmClientIq extends McsDefinitions.IqStanza {}
 
 export interface FcmClientInit {
   acg?: FcmClientACG
-  ecdh?: FcmClientECDH
+  ece?: FcmClientECE
   storage?: {
     instance?: Storage
     key?: string
@@ -85,6 +85,7 @@ export interface FcmSubscription extends FcmRegistration {}
 export interface GoogleServiceAccount {
   client_email: string
   private_key: string
+  project_id: string
 }
 
 export interface RegisterToFcmConfig {
@@ -93,9 +94,9 @@ export interface RegisterToFcmConfig {
     securityToken?: bigint
   }
   appID: string
-  ecdh: {
+  ece: {
+    authSecret: ArrayLike<number>
     publicKey: ArrayLike<number>
-    salt: ArrayLike<number>
   }
   firebase: {
     apiKey: string
@@ -111,9 +112,9 @@ export interface SubscribeToFcmConfig {
     securityToken?: bigint
   }
   appID: string
-  ecdh: {
+  ece: {
+    authSecret: ArrayLike<number>
     publicKey: ArrayLike<number>
-    salt: ArrayLike<number>
   }
   senderID: string
 }

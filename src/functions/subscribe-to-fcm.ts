@@ -6,9 +6,19 @@ import { postAcgCheckin, postAcgRegister } from '../requests/acg-requests.js'
 import { postFcmSubscribe } from '../requests/fcm-requests.js'
 
 /**
- * @deprecated
+ * Subscribes to Firebase Cloud Messaging using a deprecated API.
+ * Exists only for retro compatibility reasons, please use the `registerToFCM` function instead.
+ * Optionally registers with already existing ACG ID and ACG security token.
  *
- * Will stop working in June 2024.
+ * - The app ID is the package name of the app.
+ * - The ECE auth secret and ECE public key must be generated beforehand with the `createFcmECDH` and `generateFcmAuthSecret` functions. The auth secret and ECDH keys must be stored.
+ * - The sender ID can be found in the Firebase console.
+ *
+ * Returns the ACG ID, ACG security token and FCM token, which must be stored.
+ *
+ * [Aracna Reference](https://aracna.dariosechi.it/fcm/functions/subscribe-to-fcm)
+ *
+ * @deprecated Will stop working in June 2024.
  */
 export async function subscribeToFCM(config: SubscribeToFcmConfig): Promise<FcmSubscription | Error> {
   let checkin: AcgCheckinResponse | FetchError,
@@ -22,7 +32,7 @@ export async function subscribeToFCM(config: SubscribeToFcmConfig): Promise<FcmS
   token = await postAcgRegister(checkin.android_id, checkin.security_token, config.appID)
   if (token instanceof Error) return token
 
-  fcm = await postFcmSubscribe(config.senderID, token, config.ecdh.publicKey, config.ecdh.salt)
+  fcm = await postFcmSubscribe(config.senderID, token, config.ece.publicKey, config.ece.authSecret)
   if (fcm instanceof Error) return fcm
 
   subscription = {

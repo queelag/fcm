@@ -4,7 +4,7 @@ import { FcmRegistrationsApiDefinitions } from '../../src/definitions/apis/fcm-r
 import { FirebaseInstallationsApiDefinitions } from '../../src/definitions/apis/firebase-installations-api-definitions'
 import { postFcmRegistrations } from '../../src/requests/fcm-registrations-requests'
 import { postFirebaseInstallations } from '../../src/requests/firebase-installations-requests'
-import { ACG_TOKEN, ECDH_PUBLIC_KEY, ECDH_SALT, FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_PROJECT_ID, VAPID_KEY } from '../definitions/constants'
+import { ACG_TOKEN, ECE_AUTH_SECRET, ECE_PUBLIC_KEY, FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_PROJECT_ID, VAPID_KEY } from '../definitions/constants'
 
 describe('FCM Registrations Requests', () => {
   it('registers', async () => {
@@ -18,9 +18,9 @@ describe('FCM Registrations Requests', () => {
       FIREBASE_PROJECT_ID,
       FIREBASE_API_KEY,
       VAPID_KEY,
-      ECDH_SALT,
+      ECE_AUTH_SECRET,
       installation.authToken.token,
-      ECDH_PUBLIC_KEY,
+      ECE_PUBLIC_KEY,
       ACG_TOKEN
     )
     if (registration instanceof Error) throw registration

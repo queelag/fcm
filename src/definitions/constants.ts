@@ -1,6 +1,6 @@
 import protobuf, { Root } from 'protobufjs'
 import { McsState, McsTag } from './enums.js'
-import { FcmClientACG, FcmClientData, FcmClientECDH } from './interfaces.js'
+import { FcmClientACG, FcmClientData, FcmClientECE } from './interfaces.js'
 
 /**
  * ACG
@@ -45,9 +45,9 @@ export const DEFAULT_FCM_CLIENT_ACG: () => FcmClientACG = () => ({
   id: 0n,
   securityToken: 0n
 })
-export const DEFAULT_FCM_CLIENT_ECDH: () => FcmClientECDH = () => ({
-  privateKey: [],
-  salt: []
+export const DEFAULT_FCM_CLIENT_ECE: () => FcmClientECE = () => ({
+  authSecret: [],
+  privateKey: []
 })
 export const DEFAULT_FCM_CLIENT_DATA: () => FcmClientData = () => ({
   cursor: 0,

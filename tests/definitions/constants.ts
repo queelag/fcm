@@ -7,9 +7,9 @@ export const ACG_TOKEN: string = import.meta.env.VITE_ACG_TOKEN
 
 export const APP_ID: string = 'aracna.fcm.test'
 
-export const ECDH_PRIVATE_KEY: Uint8Array = decodeBase64('jldkYXifY0biPzg0KC5R5jc/Wvh7i83sBDH/qpf0l74=')
-export const ECDH_PUBLIC_KEY: Uint8Array = decodeBase64('BD4QIR+mIsck16PMkbQmcfDo9J6/wwzwpeoirJ27U3EzKnW/aANwkpBPTZdkJS+y8r85vQ1zuhti+wTzdyW6f/s=')
-export const ECDH_SALT: Uint8Array = decodeBase64('PZChiwbgqaQ3cWT8vvqwMA==')
+export const ECE_AUTH_SECRET: Uint8Array = decodeBase64('PZChiwbgqaQ3cWT8vvqwMA==')
+export const ECE_PRIVATE_KEY: Uint8Array = decodeBase64('jldkYXifY0biPzg0KC5R5jc/Wvh7i83sBDH/qpf0l74=')
+export const ECE_PUBLIC_KEY: Uint8Array = decodeBase64('BD4QIR+mIsck16PMkbQmcfDo9J6/wwzwpeoirJ27U3EzKnW/aANwkpBPTZdkJS+y8r85vQ1zuhti+wTzdyW6f/s=')
 
 export const FCM_SENDER_ID: string = import.meta.env.VITE_FCM_SENDER_ID
 export const FCM_SERVER_KEY: string = import.meta.env.VITE_FCM_SERVER_KEY

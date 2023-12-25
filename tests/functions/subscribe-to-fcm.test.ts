@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { FcmSubscription, subscribeToFCM } from '../../src'
-import { ACG_ID, ACG_SECURITY_TOKEN, APP_ID, ECDH_PUBLIC_KEY, ECDH_SALT, FCM_SENDER_ID } from '../definitions/constants'
+import { ACG_ID, ACG_SECURITY_TOKEN, APP_ID, ECE_AUTH_SECRET, ECE_PUBLIC_KEY, FCM_SENDER_ID } from '../definitions/constants'
 
 describe('subscribeToFCM', () => {
   it('works', async () => {
@@ -12,9 +12,9 @@ describe('subscribeToFCM', () => {
         securityToken: ACG_SECURITY_TOKEN
       },
       appID: APP_ID,
-      ecdh: {
-        publicKey: ECDH_PUBLIC_KEY,
-        salt: ECDH_SALT
+      ece: {
+        authSecret: ECE_AUTH_SECRET,
+        publicKey: ECE_PUBLIC_KEY
       },
       senderID: FCM_SENDER_ID
     })

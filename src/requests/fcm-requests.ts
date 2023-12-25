@@ -8,8 +8,7 @@ import { getGoogleAuthAccessToken } from '../utils/google-auth-utils.js'
  * Send a message to specified target (a registration token, topic or condition).
  */
 export async function postFcmSendV1<T extends object>(
-  projectID: string,
-  serviceAccount: GoogleServiceAccount,
+  account: GoogleServiceAccount,
   message: FcmApiDefinitions.V1.MessageWithTarget<T>,
   validateOnly?: boolean
 ): Promise<FcmApiDefinitions.V1.Message<T> | FcmApiDefinitions.V1.Error> {
@@ -21,10 +20,10 @@ export async function postFcmSendV1<T extends object>(
   }
 
   headers = {
-    authorization: `Bearer ${await getGoogleAuthAccessToken(serviceAccount.client_email, serviceAccount.private_key)}`
+    authorization: `Bearer ${await getGoogleAuthAccessToken(account.client_email, account.private_key)}`
   }
 
-  response = await FcmAPI.post(`v1/projects/${projectID}/messages:send`, body, { headers })
+  response = await FcmAPI.post(`v1/projects/${account.project_id}/messages:send`, body, { headers })
   if (response instanceof Error) return response
 
   return response.data
