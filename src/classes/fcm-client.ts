@@ -438,7 +438,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
    */
   protected onSocketDataBytes = (): void => {
     switch (this.data.tag) {
-      case McsTag.CLOSE:
+      case McsTag.CLOSE: {
         let close: McsDefinitions.Close
 
         close = decodeProtoType(MCSProto.Close, this.data.value.subarray(this.data.cursor))
@@ -448,7 +448,8 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'CLOSE', `The close event has been emitted.`)
 
         break
-      case McsTag.DATA_MESSAGE_STANZA:
+      }
+      case McsTag.DATA_MESSAGE_STANZA: {
         let message: McsDefinitions.DataMessageStanza, ecdh: ECDH, decrypted: Buffer, data: FcmClientMessageData
 
         message = decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor))
@@ -482,7 +483,8 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message event has been emitted.`)
 
         break
-      case McsTag.HEARTBEAT_ACK:
+      }
+      case McsTag.HEARTBEAT_ACK: {
         let heartbeat: McsDefinitions.HeartbeatAck
 
         heartbeat = decodeProtoType(MCSProto.HeartbeatAck, this.data.value.subarray(this.data.cursor))
@@ -497,7 +499,8 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         setTimeout(this.heartbeat.bind(this), MCS_HEARTBEAT_PING_TIMEOUT_MS)
 
         break
-      case McsTag.IQ_STANZA:
+      }
+      case McsTag.IQ_STANZA: {
         let iq: McsDefinitions.IqStanza
 
         iq = decodeProtoType(MCSProto.IqStanza, this.data.value.subarray(this.data.cursor))
@@ -507,7 +510,8 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'IQ_STANZA', `The iq event has been emitted.`)
 
         break
-      case McsTag.LOGIN_RESPONSE:
+      }
+      case McsTag.LOGIN_RESPONSE: {
         let login: McsDefinitions.LoginResponse
 
         login = decodeProtoType(MCSProto.LoginResponse, this.data.value.subarray(this.data.cursor))
@@ -533,6 +537,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         this.heartbeat()
 
         break
+      }
       default:
         ClassLogger.warn('FcmClient', 'onSocketDataBytes', `This tag is not handled.`, [this.data.tag, McsTag[this.data.tag]])
         break
