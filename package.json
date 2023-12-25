@@ -61,5 +61,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "index.d.ts",
-  "version": "1.0.14"
+  "version": "1.0.15"
 }
