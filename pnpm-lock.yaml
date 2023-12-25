@@ -20,8 +20,8 @@ dependencies:
 
 devDependencies:
   '@aracna/core':
-    specifier: ^1.1.73
-    version: 1.1.73
+    specifier: ^1.1.75
+    version: 1.1.75
   '@microsoft/api-extractor':
     specifier: ^7.39.0
     version: 7.39.0(@types/node@20.10.5)
@@ -78,8 +78,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.20
     dev: true
 
-  /@aracna/core@1.1.73:
-    resolution: {integrity: sha512-zeSykz8QWZecDjRMhl7Z5E+X2BN8jLjBUFQQ0HGPhgwr2ppNNV1RiuAXcqT1I0xITnagKcp962jL1bMXdk2C+g==}
+  /@aracna/core@1.1.75:
+    resolution: {integrity: sha512-3wMED2yRj/uUCP2CWgX89N0gI/vk2Vwj1GDzcu8WasWKZfK4TzzLzHOyQSIiWAzZEpFyuhpkzXoDPYfJl+wZ2A==}
     engines: {node: '>=20', pnpm: '>=8'}
     dependencies:
       '@types/cookie': 0.6.0

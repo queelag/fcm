@@ -20,7 +20,7 @@ export async function postFcmRegistrations(
     web: {
       applicationPubKey,
       auth: encodeBase64URL(auth, { pad: false }),
-      endpoint: concatURL(FcmAPI.baseURL, 'fcm/send', token),
+      endpoint: concatURL(FcmAPI.baseURL, 'fcm/send/', token),
       p256dh: encodeBase64URL(p256dh, { pad: false })
     }
   }
