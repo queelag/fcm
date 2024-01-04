@@ -8,5 +8,7 @@ export default defineConfig({
       reporter: ['lcov']
     },
     include: ['tests/**/*.test.ts']
+    // maxWorkers: 1,
+    // minWorkers: 1
   }
 })

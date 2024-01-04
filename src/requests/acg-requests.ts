@@ -1,7 +1,7 @@
 import { FetchError, encodeBase64URL, serializeURLSearchParams } from '@aracna/core'
 import { AcgAPI } from '../apis/acg-api.js'
 import { AcgApiDefinitions } from '../definitions/apis/acg-api-definitions.js'
-import { ACG_REGISTER_CHROME_VERSION, ACG_REGISTER_SENDER } from '../definitions/constants.js'
+import { ACG_REGISTER_CHROME_VERSION, ACG_REGISTER_MAX_TRIES, ACG_REGISTER_SENDER } from '../definitions/constants.js'
 import { AcgCheckinResponse } from '../definitions/interfaces.js'
 import { AndroidCheckinDefinitions } from '../definitions/proto/android-checkin-definitions.js'
 import { CheckinDefinitions } from '../definitions/proto/checkin-definitions.js'
@@ -73,7 +73,7 @@ export async function postAcgCheckin(id: bigint = 0n, securityToken: bigint = 0n
   return result
 }
 
-export async function postAcgRegister(device: bigint, securityToken: bigint, subtype: string): Promise<string | FetchError> {
+export async function postAcgRegister(device: bigint, securityToken: bigint, subtype: string, tries: number = 0): Promise<string | FetchError> {
   let body: URLSearchParams, headers: HeadersInit, response: AcgApiDefinitions.RegisterResponse | FetchError, token: string
 
   body = serializeURLSearchParams<AcgApiDefinitions.RegisterRequestBody>({
@@ -92,6 +92,11 @@ export async function postAcgRegister(device: bigint, securityToken: bigint, sub
 
   if (!response.data.startsWith('token=')) {
     RequestLogger.error('postAcgRegister', `The response data does not contain the token.`, [response.data])
+
+    if (tries < ACG_REGISTER_MAX_TRIES) {
+      return postAcgRegister(device, securityToken, subtype, tries + 1)
+    }
+
     return FetchError.from(response)
   }
 

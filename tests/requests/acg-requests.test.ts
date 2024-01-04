@@ -33,4 +33,16 @@ describe('ACG Requests', () => {
 
     expect(token).toBeTypeOf('string')
   })
+
+  it('registers with fresh id and security token', async () => {
+    let checkin: AcgCheckinResponse | FetchError, token: string | FetchError
+
+    checkin = await postAcgCheckin()
+    if (checkin instanceof Error) throw checkin
+
+    token = await postAcgRegister(checkin.android_id, checkin.security_token, 'aracna.fcm')
+    if (token instanceof Error) throw token
+
+    expect(token).toBeTypeOf('string')
+  })
 })

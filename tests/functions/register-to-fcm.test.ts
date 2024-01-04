@@ -1,5 +1,6 @@
+import { ECDH } from 'crypto'
 import { describe, expect, it } from 'vitest'
-import { FcmRegistration, registerToFCM } from '../../src'
+import { FcmRegistration, createFcmECDH, generateFcmAuthSecret, registerToFCM } from '../../src'
 import {
   ACG_ID,
   ACG_SECURITY_TOKEN,
@@ -14,6 +15,32 @@ import {
 
 describe('registerToFCM', () => {
   it('works', async () => {
+    let auth: Uint8Array, ecdh: ECDH, registration: FcmRegistration | Error
+
+    auth = generateFcmAuthSecret()
+    ecdh = createFcmECDH()
+
+    registration = await registerToFCM({
+      appID: APP_ID,
+      ece: {
+        authSecret: auth,
+        publicKey: ecdh.getPublicKey()
+      },
+      firebase: {
+        apiKey: FIREBASE_API_KEY,
+        appID: FIREBASE_APP_ID,
+        projectID: FIREBASE_PROJECT_ID
+      },
+      vapidKey: VAPID_KEY
+    })
+    if (registration instanceof Error) throw registration
+
+    expect(registration.acg.id).toBeTypeOf('bigint')
+    expect(registration.acg.securityToken).toBeTypeOf('bigint')
+    expect(registration.token).toBeTypeOf('string')
+  })
+
+  it('works with existing ACG ID and ACG security token', async () => {
     let registration: FcmRegistration | Error
 
     registration = await registerToFCM({

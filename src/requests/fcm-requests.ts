@@ -46,7 +46,7 @@ export async function postFcmSubscribe(
     authorized_entity: senderID,
     encryption_auth: encodeBase64URL(auth, { pad: false }),
     encryption_key: encodeBase64URL(key, { pad: false }),
-    endpoint: concatURL(FcmAPI.baseURL, 'fcm/send/', token)
+    endpoint: concatURL(FcmAPI.baseURL, `fcm/send/${token}`)
   })
 
   response = await FcmAPI.post('fcm/connect/subscribe', body)
