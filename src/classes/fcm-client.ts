@@ -7,8 +7,8 @@ import {
   DEFAULT_FCM_CLIENT_ACG,
   DEFAULT_FCM_CLIENT_DATA,
   DEFAULT_FCM_CLIENT_ECE,
+  DEFAULT_FCM_CLIENT_HEARTBEAT_FREQUENCY,
   DEFAULT_FCM_CLIENT_STORAGE_KEY,
-  MCS_HEARTBEAT_PING_TIMEOUT_MS,
   MCS_SIZE_PACKET_MAX_LENGTH,
   MCS_SIZE_PACKET_MIN_LENGTH,
   MCS_TAG_PACKET_LENGTH,
@@ -25,7 +25,8 @@ import {
   FcmClientECE,
   FcmClientEvents,
   FcmClientInit,
-  FcmClientMessageData
+  FcmClientMessageData,
+  FcmClientOptions
 } from '../definitions/interfaces.js'
 import { McsDefinitions } from '../definitions/proto/mcs-definitions.js'
 import { ClassLogger } from '../loggers/class-logger.js'
@@ -67,6 +68,10 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
    */
   protected readonly ece: FcmClientECE
   /**
+   * The options object, contains the heartbeat frequency.
+   */
+  protected readonly options: FcmClientOptions
+  /**
    * The TLS socket.
    */
   protected socket?: TLSSocket
@@ -85,6 +90,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     this.acg = init?.acg ?? DEFAULT_FCM_CLIENT_ACG()
     this.ece = init?.ece ?? DEFAULT_FCM_CLIENT_ECE()
     this.data = DEFAULT_FCM_CLIENT_DATA()
+    this.options = { heartbeat: { frequency: init?.heartbeat?.frequency ?? DEFAULT_FCM_CLIENT_HEARTBEAT_FREQUENCY } }
     this.storage = init?.storage?.instance ?? MemoryStorage
     this.storageKey = init?.storage?.key ?? DEFAULT_FCM_CLIENT_STORAGE_KEY
   }
@@ -98,8 +104,8 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
   async connect(options?: ConnectionOptions): Promise<void | FetchError | Error> {
     let checkin: AcgCheckinResponse | FetchError
 
-    if (this.socket?.connecting) {
-      return
+    if (this.socket?.connecting || this.socket?.writable) {
+      return ClassLogger.warn('FcmClient', 'connect', 'The socket is already connected or is connecting.')
     }
 
     await this.storage.copy(this.storageKey, this.data)
@@ -135,8 +141,8 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     await this.storage.set(this.storageKey, this.data, ['received'])
     ClassLogger.verbose('FcmClient', 'disconnect', 'The received pids have been stored.')
 
-    if (this.socket?.closed) {
-      return
+    if (this.socket?.closed || this.socket?.destroyed) {
+      return ClassLogger.warn('FcmClient', 'disconnect', 'The socket is already disconnected.')
     }
 
     this.socket?.on('close', () => {
@@ -501,7 +507,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         this.data.heartbeat = heartbeat
         ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'HEARTBEAT_ACK', `The heartbeat ack has been set inside data.`)
 
-        setTimeout(this.heartbeat.bind(this), MCS_HEARTBEAT_PING_TIMEOUT_MS)
+        setTimeout(this.heartbeat.bind(this), this.options.heartbeat?.frequency)
 
         break
       }
@@ -627,6 +633,13 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
   }
 
   /**
+   * Returns the heartbeat frequency.
+   */
+  getHeartbeatFrequency(): number {
+    return this.options.heartbeat.frequency
+  }
+
+  /**
    * Returns the TLS socket.
    */
   getSocket(): TLSSocket | undefined {
@@ -662,6 +675,14 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
    */
   setEcdhPrivateKey(privateKey: ArrayLike<number>): this {
     this.ece.privateKey = privateKey
+    return this
+  }
+
+  /**
+   * Sets the heartbeat frequency in ms.
+   */
+  setHeartbeatFrequency(ms: number): this {
+    this.options.heartbeat.frequency = ms
     return this
   }
 }

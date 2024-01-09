@@ -31,7 +31,6 @@ export const MTALK_GOOGLE_PORT: number = 5228
  * MCS
  */
 /** */
-export const MCS_HEARTBEAT_PING_TIMEOUT_MS: number = 5000
 export const MCS_SIZE_PACKET_MAX_LENGTH: number = 5
 export const MCS_SIZE_PACKET_MIN_LENGTH: number = 1
 export const MCS_TAG_PACKET_LENGTH: number = 1
@@ -59,6 +58,7 @@ export const DEFAULT_FCM_CLIENT_DATA: () => FcmClientData = () => ({
   value: Buffer.alloc(0),
   version: 0
 })
+export const DEFAULT_FCM_CLIENT_HEARTBEAT_FREQUENCY: number = 10000 * 60
 export const DEFAULT_FCM_CLIENT_STORAGE_KEY: string = 'aracna_fcm_client'
 
 /**

@@ -47,6 +47,9 @@ export interface FcmClientIq extends McsDefinitions.IqStanza {}
 export interface FcmClientInit {
   acg?: FcmClientACG
   ece?: FcmClientECE
+  heartbeat?: {
+    frequency?: number
+  }
   storage?: {
     instance?: Storage
     key?: string
@@ -57,9 +60,9 @@ export interface FcmClientLogin extends McsDefinitions.LoginResponse {}
 export interface FcmClientMessage extends McsDefinitions.DataMessageStanza {}
 
 export interface FcmClientMessageData<T extends FcmApiNotification = FcmApiNotification> {
+  data?: T
   fcmMessageId: string
   from: string
-  notification?: T
   priority: string
 }
 
@@ -70,6 +73,12 @@ export interface FcmClientEvents extends EventEmitterEventMap {
   login: (login: FcmClientLogin) => any
   message: (message: FcmClientMessage) => any
   'message-data': (data: FcmClientMessageData) => any
+}
+
+export interface FcmClientOptions {
+  heartbeat: {
+    frequency: number
+  }
 }
 
 export interface FcmRegistration {
