@@ -98,10 +98,13 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
    * - The ACG ID and ACG security token will be verified before connecting.
    */
   async connect(options?: ConnectionOptions): Promise<void | FetchError | Error> {
-    let copy: void | Error, checkin: AcgCheckinResponse | FetchError
+    let checkin: AcgCheckinResponse | FetchError
 
-    copy = await this.storage.copy(this.storageKey, this.data)
-    if (copy instanceof Error) return copy
+    if (this.socket.connecting) {
+      return
+    }
+
+    await this.storage.copy(this.storageKey, this.data)
 
     checkin = await postAcgCheckin(this.acg.id, this.acg.securityToken)
     if (checkin instanceof Error) return checkin
