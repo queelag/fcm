@@ -32,7 +32,7 @@ describe('FcmClient', () => {
     client.on('close', () => promise.resolve())
 
     await client.connect()
-    client.getSocket().write(Buffer.from([McsTag.CLOSE]))
+    client.getSocket()?.write(Buffer.from([McsTag.CLOSE]))
     await promise.instance
 
     expect(promise.state).toBe(PromiseState.FULFILLED)
@@ -63,6 +63,33 @@ describe('FcmClient', () => {
 
     client.on('login', () => promise.resolve())
 
+    await client.connect()
+    await promise.instance
+
+    expect(promise.state).toBe(PromiseState.FULFILLED)
+  })
+
+  it('logs-in multiple times with the same client instance', async () => {
+    let promise: DeferredPromise<void> = new DeferredPromise()
+
+    client.on('login', () => promise.resolve())
+
+    await client.connect()
+    await promise.instance
+
+    expect(promise.state).toBe(PromiseState.FULFILLED)
+
+    promise = new DeferredPromise()
+
+    await client.disconnect()
+    await client.connect()
+    await promise.instance
+
+    expect(promise.state).toBe(PromiseState.FULFILLED)
+
+    promise = new DeferredPromise()
+
+    await client.disconnect(new Error())
     await client.connect()
     await promise.instance
 
@@ -113,31 +140,4 @@ describe('FcmClient', () => {
 
     expect(data.from).toBe(FCM_SENDER_ID)
   }, 20000)
-
-  it('logins multiple times with the same client instance', async () => {
-    let promise: DeferredPromise<void> = new DeferredPromise()
-
-    client.on('login', () => promise.resolve())
-
-    await client.connect()
-    await promise.instance
-
-    expect(promise.state).toBe(PromiseState.FULFILLED)
-
-    promise = new DeferredPromise()
-
-    await client.disconnect()
-    await client.connect()
-    await promise.instance
-
-    expect(promise.state).toBe(PromiseState.FULFILLED)
-
-    promise = new DeferredPromise()
-
-    await client.disconnect(new Error())
-    await client.connect()
-    await promise.instance
-
-    expect(promise.state).toBe(PromiseState.FULFILLED)
-  })
 })

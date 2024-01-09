@@ -1,7 +1,6 @@
 import { DeferredPromise, EventEmitter, FetchError, MemoryStorage, Storage, decodeText, encodeBase64, setTimeout, tc } from '@aracna/core'
 import { ECDH, createECDH } from 'crypto'
 import { decrypt } from 'http_ece'
-import { Socket } from 'net'
 import { ConnectionOptions, TLSSocket, connect } from 'tls'
 import {
   ACG_REGISTER_CHROME_VERSION,
@@ -70,7 +69,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
   /**
    * The TLS socket.
    */
-  protected socket: TLSSocket
+  protected socket?: TLSSocket
   /**
    * The storage instance.
    */
@@ -86,7 +85,6 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     this.acg = init?.acg ?? DEFAULT_FCM_CLIENT_ACG()
     this.ece = init?.ece ?? DEFAULT_FCM_CLIENT_ECE()
     this.data = DEFAULT_FCM_CLIENT_DATA()
-    this.socket = new TLSSocket(new Socket())
     this.storage = init?.storage?.instance ?? MemoryStorage
     this.storageKey = init?.storage?.key ?? DEFAULT_FCM_CLIENT_STORAGE_KEY
   }
@@ -100,7 +98,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
   async connect(options?: ConnectionOptions): Promise<void | FetchError | Error> {
     let checkin: AcgCheckinResponse | FetchError
 
-    if (this.socket.connecting) {
+    if (this.socket?.connecting) {
       return
     }
 
@@ -137,12 +135,16 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     await this.storage.set(this.storageKey, this.data, ['received'])
     ClassLogger.verbose('FcmClient', 'disconnect', 'The received pids have been stored.')
 
-    if (this.socket.closed) {
+    if (this.socket?.closed) {
       return
     }
 
-    this.socket.on('close', () => promise.resolve())
-    this.socket = this.socket.destroy(error)
+    this.socket?.on('close', () => {
+      this.socket = undefined
+      promise.resolve()
+    })
+
+    this.socket = this.socket?.destroy(error)
 
     return promise.instance
   }
@@ -183,7 +185,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     this.data = DEFAULT_FCM_CLIENT_DATA()
     ClassLogger.verbose('FcmClient', 'onSocketReady', 'The data has been reset.', this.data)
 
-    this.socket.write(buffer)
+    this.socket?.write(buffer)
     ClassLogger.info('FcmClient', 'onSocketReady', `The login request has been sent.`)
   }
 
@@ -206,7 +208,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     buffer = Buffer.from([McsTag.HEARTBEAT_PING, ...encoded])
     ClassLogger.verbose('FcmClient', 'onHeartbeat', 'The heartbeat ping buffer is ready', buffer)
 
-    this.socket.write(buffer)
+    this.socket?.write(buffer)
     ClassLogger.info('FcmClient', 'onHeartbeat', 'HeartbeatPing', `The heartbeat ping has been sent.`)
   }
 
@@ -292,7 +294,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     ClassLogger.info('FcmClient', 'onSocketDataVersion', this.data.version)
 
     if (this.data.version < MCS_VERSION) {
-      this.socket.destroy(new Error('Unsupported MCS version'))
+      this.socket?.destroy(new Error('Unsupported MCS version'))
       ClassLogger.error('FcmClient', 'onSocketDataVersion', 'Unsupported MCS version', this.data.version)
 
       return
@@ -627,7 +629,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
   /**
    * Returns the TLS socket.
    */
-  getSocket(): TLSSocket {
+  getSocket(): TLSSocket | undefined {
     return this.socket
   }
 
