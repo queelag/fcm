@@ -5,10 +5,10 @@ export enum LoggerName {
 }
 
 export enum McsState {
-  VERSION_TAG_AND_SIZE,
-  TAG_AND_SIZE,
-  SIZE,
-  BYTES
+  VERSION_TAG_AND_SIZE = 0,
+  TAG_AND_SIZE = 1,
+  SIZE = 2,
+  BYTES = 3
 }
 
 export enum McsTag {

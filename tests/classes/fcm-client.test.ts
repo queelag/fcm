@@ -1,6 +1,16 @@
 import { DeferredPromise, FetchError, PromiseState } from '@aracna/core'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { FcmApiError, FcmApiMessage, FcmClient, FcmClientACG, FcmClientECE, FcmClientMessage, FcmClientMessageData, sendFcmMessage } from '../../src'
+import {
+  FcmApiError,
+  FcmApiMessage,
+  FcmClassLogger,
+  FcmClient,
+  FcmClientACG,
+  FcmClientECE,
+  FcmClientMessage,
+  FcmClientMessageData,
+  sendFcmMessage
+} from '../../src'
 import { McsTag } from '../../src/definitions/enums'
 import { ACG_ID, ACG_SECURITY_TOKEN, ECE_AUTH_SECRET, ECE_PRIVATE_KEY, FCM_SENDER_ID, FCM_TOKEN, GOOGLE_SERVICE_ACCOUNT } from '../definitions/constants'
 
@@ -107,37 +117,33 @@ describe('FcmClient', () => {
     expect(promise.state).toBe(PromiseState.FULFILLED)
   })
 
-  it('emits the message event', async () => {
-    let promise: DeferredPromise<FcmClientMessage>, sent: FcmApiMessage | FcmApiError, message: FcmClientMessage
+  it('emits the message and message-data events', async () => {
+    let pm: DeferredPromise<FcmClientMessage>,
+      pmd: DeferredPromise<FcmClientMessageData>,
+      sent: FcmApiMessage | FcmApiError,
+      message: FcmClientMessage,
+      data: FcmClientMessageData
 
-    promise = new DeferredPromise()
+    FcmClassLogger.enable()
+    FcmClassLogger.setLevel('verbose')
 
-    client.on('message', (message: FcmClientMessage) => promise.resolve(message))
+    pm = new DeferredPromise()
+    pmd = new DeferredPromise()
+
+    client.on('message', (message: FcmClientMessage) => pm.resolve(message))
+    client.on('message-data', (data: FcmClientMessageData) => pmd.resolve(data))
 
     await client.connect()
 
     sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, { token: FCM_TOKEN })
     if (sent instanceof Error) throw sent
 
-    message = await promise.instance
+    message = await pm.instance
+    data = await pmd.instance
 
     expect(message.id).toBeTypeOf('string')
-  }, 20000)
-
-  it('emits the message-data event', async () => {
-    let promise: DeferredPromise<FcmClientMessageData>, sent: FcmApiMessage | FcmApiError, data: FcmClientMessageData
-
-    promise = new DeferredPromise()
-
-    client.on('message-data', (data: FcmClientMessageData) => promise.resolve(data))
-
-    await client.connect()
-
-    sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, { token: FCM_TOKEN })
-    if (sent instanceof Error) throw sent
-
-    data = await promise.instance
-
     expect(data.from).toBe(FCM_SENDER_ID)
-  }, 20000)
+
+    expect(client.getStorage().get(client.getStorageKey())).toStrictEqual({ received: { pids: [message.persistent_id] } })
+  }, 60000)
 })

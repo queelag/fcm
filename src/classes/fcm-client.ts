@@ -108,7 +108,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
       return ClassLogger.warn('FcmClient', 'connect', 'The socket is already connected or is connecting.')
     }
 
-    await this.storage.copy(this.storageKey, this.data)
+    await this.storage.copy(this.storageKey, this.data, ['received'])
 
     checkin = await postAcgCheckin(this.acg.id, this.acg.securityToken)
     if (checkin instanceof Error) return checkin
@@ -644,6 +644,20 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
    */
   getSocket(): TLSSocket | undefined {
     return this.socket
+  }
+
+  /**
+   * Returns the storage.
+   */
+  getStorage(): Storage {
+    return this.storage
+  }
+
+  /**
+   * Returns the storage key.
+   */
+  getStorageKey(): string {
+    return this.storageKey
   }
 
   /**
