@@ -1,4 +1,5 @@
 import { ECDH, createECDH, randomBytes } from 'crypto'
+import { FCM_ECDH_CURVE_NAME } from '../definitions/constants.js'
 
 /**
  * Creates a new ECDH instance with the prime256v1 curve and generates a new key pair.
@@ -8,7 +9,7 @@ import { ECDH, createECDH, randomBytes } from 'crypto'
 export function createFcmECDH(): ECDH {
   let ecdh: ECDH
 
-  ecdh = createECDH('prime256v1')
+  ecdh = createECDH(FCM_ECDH_CURVE_NAME)
   ecdh.generateKeys()
 
   return ecdh

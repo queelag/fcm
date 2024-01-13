@@ -7,7 +7,7 @@
     "protobufjs": "^7.2.5"
   },
   "devDependencies": {
-    "@aracna/core": "^1.1.77",
+    "@aracna/core": "^1.1.81",
     "@microsoft/api-extractor": "^7.39.1",
     "@types/node": "^20.10.6",
     "@vitest/coverage-v8": "^1.1.1",

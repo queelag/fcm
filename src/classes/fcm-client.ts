@@ -9,6 +9,7 @@ import {
   DEFAULT_FCM_CLIENT_ECE,
   DEFAULT_FCM_CLIENT_HEARTBEAT_FREQUENCY,
   DEFAULT_FCM_CLIENT_STORAGE_KEY,
+  FCM_ECDH_CURVE_NAME,
   MCS_SIZE_PACKET_MAX_LENGTH,
   MCS_SIZE_PACKET_MIN_LENGTH,
   MCS_TAG_PACKET_LENGTH,
@@ -102,13 +103,14 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
    * - The ACG ID and ACG security token will be verified before connecting.
    */
   async connect(options?: ConnectionOptions): Promise<void | FetchError | Error> {
-    let checkin: AcgCheckinResponse | FetchError
+    let copied: void | Error, checkin: AcgCheckinResponse | FetchError
 
     if (this.socket?.connecting || this.socket?.writable) {
       return ClassLogger.warn('FcmClient', 'connect', 'The socket is already connected or is connecting.')
     }
 
-    await this.storage.copy(this.storageKey, this.data, ['received'])
+    copied = await this.storage.copy(this.storageKey, this.data, ['received'])
+    if (copied instanceof Error) return copied
 
     checkin = await postAcgCheckin(this.acg.id, this.acg.securityToken)
     if (checkin instanceof Error) return checkin
@@ -364,18 +366,19 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         )
 
         decryptable = tc(() => {
-          let message: McsDefinitions.DataMessageStanza = decodeProtoType(
-            MCSProto.DataMessageStanza,
-            this.data.value.subarray(this.data.cursor + this.data.size.packets)
-          )
+          let message: McsDefinitions.DataMessageStanza, decrypted: Buffer
 
-          decrypt(Buffer.from(message.raw_data), {
+          message = decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor + this.data.size.packets))
+
+          decrypted = decrypt(Buffer.from(message.raw_data), {
             authSecret: encodeBase64(this.ece.authSecret),
             dh: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'crypto-key')?.value.slice(3),
-            privateKey: createECDH('prime256v1').setPrivateKey(new Uint8Array(this.ece.privateKey)),
+            privateKey: createECDH(FCM_ECDH_CURVE_NAME).setPrivateKey(new Uint8Array(this.ece.privateKey)),
             salt: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'encryption')?.value.slice(5),
             version: 'aesgcm'
           })
+
+          JSON.parse(decodeText(decrypted))
         }, false)
 
         break
@@ -475,7 +478,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         this.storage.set(this.storageKey, this.data, ['received'])
         ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The received pids have been stored.`)
 
-        ecdh = createECDH('prime256v1')
+        ecdh = createECDH(FCM_ECDH_CURVE_NAME)
         ecdh.setPrivateKey(new Uint8Array(this.ece.privateKey))
 
         decrypted = decrypt(Buffer.from(message.raw_data), {

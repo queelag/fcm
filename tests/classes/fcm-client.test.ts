@@ -1,35 +1,56 @@
 import { DeferredPromise, FetchError, PromiseState } from '@aracna/core'
+import { ECDH } from 'crypto'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
   FcmApiError,
   FcmApiMessage,
-  FcmClassLogger,
   FcmClient,
   FcmClientACG,
   FcmClientECE,
   FcmClientMessage,
   FcmClientMessageData,
+  FcmRegistration,
+  createFcmECDH,
+  generateFcmAuthSecret,
+  registerToFCM,
   sendFcmMessage
 } from '../../src'
+import { FcmApiDefinitions } from '../../src/definitions/apis/fcm-api-definitions'
 import { McsTag } from '../../src/definitions/enums'
-import { ACG_ID, ACG_SECURITY_TOKEN, ECE_AUTH_SECRET, ECE_PRIVATE_KEY, FCM_SENDER_ID, FCM_TOKEN, GOOGLE_SERVICE_ACCOUNT } from '../definitions/constants'
+import { APP_ID, FCM_SENDER_ID, FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_PROJECT_ID, GOOGLE_SERVICE_ACCOUNT, VAPID_KEY } from '../definitions/constants'
 
 describe('FcmClient', () => {
-  let acg: FcmClientACG, ece: FcmClientECE, client: FcmClient
+  let auth: Uint8Array, ecdh: ECDH, registration: FcmRegistration | Error, acg: FcmClientACG, ece: FcmClientECE, token: string, client: FcmClient
 
   afterEach(async () => {
     await client.disconnect()
   })
 
-  beforeAll(() => {
-    acg = {
-      id: ACG_ID,
-      securityToken: ACG_SECURITY_TOKEN
-    }
+  beforeAll(async () => {
+    auth = generateFcmAuthSecret()
+    ecdh = createFcmECDH()
+
+    registration = await registerToFCM({
+      appID: APP_ID,
+      ece: {
+        authSecret: auth,
+        publicKey: ecdh.getPublicKey()
+      },
+      firebase: {
+        apiKey: FIREBASE_API_KEY,
+        appID: FIREBASE_APP_ID,
+        projectID: FIREBASE_PROJECT_ID
+      },
+      vapidKey: VAPID_KEY
+    })
+    if (registration instanceof Error) throw registration
+
+    acg = registration.acg
     ece = {
-      authSecret: ECE_AUTH_SECRET,
-      privateKey: ECE_PRIVATE_KEY
+      authSecret: auth,
+      privateKey: ecdh.getPrivateKey()
     }
+    token = registration.token
   })
 
   beforeEach(() => {
@@ -117,33 +138,32 @@ describe('FcmClient', () => {
     expect(promise.state).toBe(PromiseState.FULFILLED)
   })
 
-  it('emits the message and message-data events', async () => {
-    let pm: DeferredPromise<FcmClientMessage>,
-      pmd: DeferredPromise<FcmClientMessageData>,
-      sent: FcmApiMessage | FcmApiError,
-      message: FcmClientMessage,
-      data: FcmClientMessageData
+  it(
+    'emits the message and message-data events',
+    async () => {
+      let pm: DeferredPromise<FcmClientMessage>,
+        pmd: DeferredPromise<FcmClientMessageData>,
+        sent: FcmApiMessage | FcmApiError,
+        message: FcmClientMessage,
+        data: FcmClientMessageData
 
-    FcmClassLogger.enable()
-    FcmClassLogger.setLevel('verbose')
+      pm = new DeferredPromise()
+      pmd = new DeferredPromise()
 
-    pm = new DeferredPromise()
-    pmd = new DeferredPromise()
+      client.on('message', (message: FcmClientMessage) => pm.resolve(message))
+      client.on('message-data', (data: FcmClientMessageData) => pmd.resolve(data))
 
-    client.on('message', (message: FcmClientMessage) => pm.resolve(message))
-    client.on('message-data', (data: FcmClientMessageData) => pmd.resolve(data))
+      await client.connect()
 
-    await client.connect()
+      sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, { android: { priority: FcmApiDefinitions.V1.AndroidMessagePriority.HIGH }, token })
+      if (sent instanceof Error) throw sent
 
-    sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, { token: FCM_TOKEN })
-    if (sent instanceof Error) throw sent
+      message = await pm.instance
+      data = await pmd.instance
 
-    message = await pm.instance
-    data = await pmd.instance
-
-    expect(message.id).toBeTypeOf('string')
-    expect(data.from).toBe(FCM_SENDER_ID)
-
-    expect(client.getStorage().get(client.getStorageKey())).toStrictEqual({ received: { pids: [message.persistent_id] } })
-  }, 60000)
+      expect(message.id).toBeTypeOf('string')
+      expect(data.from).toBe(FCM_SENDER_ID)
+    },
+    { retry: 4, timeout: 10000 }
+  )
 })

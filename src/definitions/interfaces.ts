@@ -59,10 +59,11 @@ export interface FcmClientInit {
 export interface FcmClientLogin extends McsDefinitions.LoginResponse {}
 export interface FcmClientMessage extends McsDefinitions.DataMessageStanza {}
 
-export interface FcmClientMessageData<T extends FcmApiNotification = FcmApiNotification> {
+export interface FcmClientMessageData<T extends Record<string, string> = Record<string, string>, U extends object = object> {
   data?: T
   fcmMessageId: string
   from: string
+  notification?: FcmApiNotification<U>
   priority: string
 }
 

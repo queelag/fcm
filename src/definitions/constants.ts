@@ -15,6 +15,12 @@ export const ACG_REGISTER_SENDER: number[] = [
 export const ACG_REGISTER_MAX_TRIES: number = 10
 
 /**
+ * ECDH
+ */
+/** */
+export const FCM_ECDH_CURVE_NAME: string = 'prime256v1'
+
+/**
  * GOOGLE AUTH
  */
 /** */
