@@ -1,7 +1,7 @@
 import { FetchError } from '@aracna/core'
 import { FcmRegistrationsApiDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'
 import { FirebaseInstallationsApiDefinitions } from '../definitions/apis/firebase-installations-api-definitions.js'
-import { AcgCheckinResponse, FcmRegistration, RegisterToFcmConfig } from '../definitions/interfaces.js'
+import { AcgCheckinResponse, FcmRegistration, RegisterToFcmConfig, RegisterToFcmOptions } from '../definitions/interfaces.js'
 import { FunctionLogger } from '../loggers/function-logger.js'
 import { postAcgCheckin, postAcgRegister } from '../requests/acg-requests.js'
 import { postFcmRegistrations } from '../requests/fcm-registrations-requests.js'
@@ -9,7 +9,12 @@ import { postFirebaseInstallations } from '../requests/firebase-installations-re
 
 /**
  * Registers a device to Firebase Cloud Messaging.
- * Optionally registers with already existing ACG ID and ACG security token.
+ *
+ * - Optionally registers with already existing ACG ID and ACG security token.
+ * - Optionally delays the ACG registration between each retry.
+ * - Optionally uses a custom amount of retries for the ACG registration.
+ *
+ * Configuration:
  *
  * - The app ID is the package name of the app.
  * - The ECE auth secret and ECE public key must be generated beforehand with the `createFcmECDH` and `generateFcmAuthSecret` functions. The auth secret and ECDH keys must be stored.
@@ -20,7 +25,7 @@ import { postFirebaseInstallations } from '../requests/firebase-installations-re
  *
  * [Aracna Reference](https://aracna.dariosechi.it/fcm/functions/register-to-fcm)
  */
-export async function registerToFCM(config: RegisterToFcmConfig): Promise<FcmRegistration | Error> {
+export async function registerToFCM(config: RegisterToFcmConfig, options?: RegisterToFcmOptions): Promise<FcmRegistration | Error> {
   let checkin: AcgCheckinResponse | FetchError,
     token: string | FetchError,
     installation: FirebaseInstallationsApiDefinitions.InstallationsResponseData | FetchError,
@@ -30,7 +35,7 @@ export async function registerToFCM(config: RegisterToFcmConfig): Promise<FcmReg
   checkin = await postAcgCheckin(config.acg?.id, config.acg?.securityToken)
   if (checkin instanceof Error) return checkin
 
-  token = await postAcgRegister(checkin.android_id, checkin.security_token, config.appID)
+  token = await postAcgRegister(checkin.android_id, checkin.security_token, config.appID, options?.acg?.register)
   if (token instanceof Error) return token
 
   installation = await postFirebaseInstallations(config.firebase.appID, config.firebase.projectID, config.firebase.apiKey)

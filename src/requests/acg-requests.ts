@@ -1,8 +1,13 @@
-import { FetchError, encodeBase64URL, serializeURLSearchParams } from '@aracna/core'
+import { FetchError, FetchResponse, encodeBase64URL, serializeURLSearchParams, sleep } from '@aracna/core'
 import { AcgAPI } from '../apis/acg-api.js'
 import { AcgApiDefinitions } from '../definitions/apis/acg-api-definitions.js'
-import { ACG_REGISTER_CHROME_VERSION, ACG_REGISTER_MAX_TRIES, ACG_REGISTER_SENDER } from '../definitions/constants.js'
-import { AcgCheckinResponse } from '../definitions/interfaces.js'
+import {
+  ACG_REGISTER_CHROME_VERSION,
+  ACG_REGISTER_SENDER,
+  DEFAULT_ACG_REGISTER_MAX_RETRIES,
+  DEFAULT_ACG_REGISTER_RETRY_DELAY
+} from '../definitions/constants.js'
+import { AcgCheckinResponse, PostAcgRegisterOptions } from '../definitions/interfaces.js'
 import { AndroidCheckinDefinitions } from '../definitions/proto/android-checkin-definitions.js'
 import { CheckinDefinitions } from '../definitions/proto/checkin-definitions.js'
 import { RequestLogger } from '../loggers/request-logger.js'
@@ -73,7 +78,13 @@ export async function postAcgCheckin(id: bigint = 0n, securityToken: bigint = 0n
   return result
 }
 
-export async function postAcgRegister(device: bigint, securityToken: bigint, subtype: string, tries: number = 0): Promise<string | FetchError> {
+export async function postAcgRegister(
+  device: bigint,
+  securityToken: bigint,
+  subtype: string,
+  options?: PostAcgRegisterOptions,
+  retries: number = 0
+): Promise<string | FetchError> {
   let body: URLSearchParams, headers: HeadersInit, response: AcgApiDefinitions.RegisterResponse | FetchError, token: string
 
   body = serializeURLSearchParams<AcgApiDefinitions.RegisterRequestBody>({
@@ -88,16 +99,30 @@ export async function postAcgRegister(device: bigint, securityToken: bigint, sub
   }
 
   response = await AcgAPI.post('c2dm/register3', body, { headers })
-  if (response instanceof Error) return response
 
-  if (!response.data.startsWith('token=')) {
-    RequestLogger.error('postAcgRegister', `The response data does not contain the token.`, [response.data])
+  if (response instanceof Error || !response.data.startsWith('token=')) {
+    let delay: number, max: number
 
-    if (tries < ACG_REGISTER_MAX_TRIES) {
-      return postAcgRegister(device, securityToken, subtype, tries + 1)
+    delay = options?.retry?.delay ?? DEFAULT_ACG_REGISTER_RETRY_DELAY
+    max = options?.retry?.max ?? DEFAULT_ACG_REGISTER_MAX_RETRIES
+
+    if (response instanceof Error) {
+      RequestLogger.error('postAcgRegister', `The request failed.`, [response])
     }
 
-    return FetchError.from(response)
+    if (response instanceof FetchResponse) {
+      RequestLogger.error('postAcgRegister', `The response data does not contain the token.`, [response.data])
+    }
+
+    if (retries < max) {
+      RequestLogger.verbose('postAcgRegister', `Waiting ${delay}ms before trying again...`)
+      await sleep(delay)
+
+      RequestLogger.verbose('postAcgRegister', `Trying again...`, [retries + 1, max])
+      return postAcgRegister(device, securityToken, subtype, options, retries + 1)
+    }
+
+    return response instanceof Error ? response : FetchError.from(response)
   }
 
   token = response.data.slice(6).trim()

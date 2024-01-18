@@ -98,6 +98,13 @@ export interface GoogleServiceAccount {
   project_id: string
 }
 
+export interface PostAcgRegisterOptions {
+  retry?: {
+    delay?: number
+    max?: number
+  }
+}
+
 export interface RegisterToFcmConfig {
   acg?: {
     id?: bigint
@@ -116,6 +123,12 @@ export interface RegisterToFcmConfig {
   vapidKey: string
 }
 
+export interface RegisterToFcmOptions {
+  acg?: {
+    register?: PostAcgRegisterOptions
+  }
+}
+
 export interface SubscribeToFcmConfig {
   acg?: {
     id?: bigint
@@ -127,4 +140,10 @@ export interface SubscribeToFcmConfig {
     publicKey: ArrayLike<number>
   }
   senderID: string
+}
+
+export interface SubscribeToFcmOptions {
+  acg?: {
+    register?: PostAcgRegisterOptions
+  }
 }

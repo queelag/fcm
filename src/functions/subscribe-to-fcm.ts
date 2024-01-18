@@ -1,6 +1,6 @@
 import { FetchError } from '@aracna/core'
 import { FcmApiDefinitions } from '../definitions/apis/fcm-api-definitions.js'
-import { AcgCheckinResponse, FcmSubscription, SubscribeToFcmConfig } from '../definitions/interfaces.js'
+import { AcgCheckinResponse, FcmSubscription, SubscribeToFcmConfig, SubscribeToFcmOptions } from '../definitions/interfaces.js'
 import { FunctionLogger } from '../loggers/function-logger.js'
 import { postAcgCheckin, postAcgRegister } from '../requests/acg-requests.js'
 import { postFcmSubscribe } from '../requests/fcm-requests.js'
@@ -8,7 +8,12 @@ import { postFcmSubscribe } from '../requests/fcm-requests.js'
 /**
  * Subscribes to Firebase Cloud Messaging using a deprecated API.
  * Exists only for retro compatibility reasons, please use the `registerToFCM` function instead.
- * Optionally registers with already existing ACG ID and ACG security token.
+ *
+ * - Optionally registers with already existing ACG ID and ACG security token.
+ * - Optionally delays the ACG registration between each retry.
+ * - Optionally uses a custom amount of retries for the ACG registration.
+ *
+ * Configuration:
  *
  * - The app ID is the package name of the app.
  * - The ECE auth secret and ECE public key must be generated beforehand with the `createFcmECDH` and `generateFcmAuthSecret` functions. The auth secret and ECDH keys must be stored.
@@ -20,7 +25,7 @@ import { postFcmSubscribe } from '../requests/fcm-requests.js'
  *
  * @deprecated Will stop working in June 2024.
  */
-export async function subscribeToFCM(config: SubscribeToFcmConfig): Promise<FcmSubscription | Error> {
+export async function subscribeToFCM(config: SubscribeToFcmConfig, options?: SubscribeToFcmOptions): Promise<FcmSubscription | Error> {
   let checkin: AcgCheckinResponse | FetchError,
     token: string | FetchError,
     fcm: FcmApiDefinitions.SubscribeResponseData | FetchError,
@@ -29,7 +34,7 @@ export async function subscribeToFCM(config: SubscribeToFcmConfig): Promise<FcmS
   checkin = await postAcgCheckin(config.acg?.id, config.acg?.securityToken)
   if (checkin instanceof Error) return checkin
 
-  token = await postAcgRegister(checkin.android_id, checkin.security_token, config.appID)
+  token = await postAcgRegister(checkin.android_id, checkin.security_token, config.appID, options?.acg?.register)
   if (token instanceof Error) return token
 
   fcm = await postFcmSubscribe(config.senderID, token, config.ece.publicKey, config.ece.authSecret)
