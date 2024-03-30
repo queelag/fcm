@@ -1,0 +1,19 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "send-message": "vite-node src/send-message.ts",
+    "start": "vite-node src/register-and-listen.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aracna/core": "^1.1.81",
+    "@aracna/fcm": "^1.0.22",
+    "vite": "^5.2.7",
+    "vite-node": "^1.4.0"
+  }
+}
