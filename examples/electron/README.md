@@ -1,4 +1,4 @@
-# @aracna/fcm - Node.js Example
+# @aracna/fcm - Electron Example
 
 Please define the following variables inside a .env file.
 
@@ -18,9 +18,7 @@ The `VITE_GOOGLE_SERVICE_ACCOUNT` variable must be base64 encoded.
 pnpm i
 ```
 
-## Register & Listen
-
-This command registers a new device to FCM if not already registered, then connects with the client and listens to any incoming messages.
+## Run
 
 ```
 pnpm start
