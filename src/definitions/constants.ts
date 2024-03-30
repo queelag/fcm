@@ -13,7 +13,7 @@ export const ACG_REGISTER_SENDER: number[] = [
   0x08, 0x6a, 0x6f, 0x2d, 0xb1, 0x1a, 0x95, 0xb0, 0xce, 0x37, 0xc0, 0x9c, 0x6e
 ]
 export const DEFAULT_ACG_REGISTER_MAX_RETRIES: number = 10
-export const DEFAULT_ACG_REGISTER_RETRY_DELAY: number = 100
+export const DEFAULT_ACG_REGISTER_RETRY_DELAY: number = 250
 
 /**
  * ECDH
