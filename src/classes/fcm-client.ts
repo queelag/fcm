@@ -407,7 +407,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
       ClassLogger.verbose('FcmClient', 'onSocketDataSize', `Increasing the packets by 1.`, [this.data.size.packets])
 
       this.onSocketDataSize()
-      ClassLogger.verbose('FcmClient', 'onSocketDataSize', `Failed to decode the message with current size and bytes.`)
+      ClassLogger.verbose('FcmClient', 'onSocketDataSize', `Failed to decode the message with current size and bytes.`, [decodable, decryptable])
 
       return
     }
