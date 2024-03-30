@@ -28,7 +28,7 @@ pnpm start
 
 ## Send Test Message
 
-This command will send a test message to the client that is listening when you run `pnpm start`, you should see it appear in its logs once sent.
+This command will send a test message to the client that is listening when you run `pnpm start`, it should be visible on the console once the client receives it.
 
 ```
 pnpm send-message
