@@ -1,5 +1,11 @@
 export * from './classes/fcm-client.js'
-export { LoggerName as FcmLoggerName } from './definitions/enums.js'
+export {
+  FcmApiAndroidErrorCode,
+  FcmApiAndroidMessagePriority,
+  FcmApiAndroidNotificationPriority,
+  FcmApiAndroidVisibility,
+  LoggerName as FcmLoggerName
+} from './definitions/enums.js'
 export type {
   FcmApiError,
   FcmApiMessage,

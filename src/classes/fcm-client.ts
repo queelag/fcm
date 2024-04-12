@@ -1,4 +1,4 @@
-import { DeferredPromise, EventEmitter, FetchError, MemoryStorage, Storage, decodeText, encodeBase64, setTimeout, tc } from '@aracna/core'
+import { DeferredPromise, EventEmitter, FetchError, MemoryStorage, Storage, clearTimeout, decodeText, encodeBase64, setTimeout, tc } from '@aracna/core'
 import { ECDH, createECDH } from 'crypto'
 import { decrypt } from 'http_ece'
 import { ConnectionOptions, TLSSocket, connect } from 'tls'
@@ -12,6 +12,7 @@ import {
   FCM_ECDH_CURVE_NAME,
   MCS_SIZE_PACKET_MAX_LENGTH,
   MCS_SIZE_PACKET_MIN_LENGTH,
+  MCS_SIZE_TIMEOUT,
   MCS_TAG_PACKET_LENGTH,
   MCS_VERSION,
   MCS_VERSION_PACKET_LENGTH,
@@ -348,9 +349,11 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
       return
     }
 
-    if (this.data.size.packets >= MCS_SIZE_PACKET_MAX_LENGTH) {
-      this.prepareForNextMessage()
-      ClassLogger.warn('FcmClient', 'onSocketDataBytes', `Failed to read current message, ready for the next one.`)
+    if (this.data.size.packets > MCS_SIZE_PACKET_MAX_LENGTH) {
+      this.data.size.packets = MCS_SIZE_PACKET_MIN_LENGTH
+      ClassLogger.warn('FcmClient', 'onSocketDataBytes', `Failed to read current message, resetting size packets and waiting for more bytes.`)
+
+      setTimeout(this.onSocketDataSizeTimeout, MCS_SIZE_TIMEOUT)
 
       return
     }
@@ -366,9 +369,10 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         )
 
         decryptable = tc(() => {
-          let message: McsDefinitions.DataMessageStanza, decrypted: Buffer
+          let message: McsDefinitions.DataMessageStanza | Error, decrypted: Buffer
 
-          message = decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor + this.data.size.packets))
+          message = tc(() => decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor + this.data.size.packets)), false)
+          if (message instanceof Error) return
 
           decrypted = decrypt(Buffer.from(message.raw_data), {
             authSecret: encodeBase64(this.ece.authSecret),
@@ -403,14 +407,21 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     }
 
     if (decodable instanceof Error || typeof decodable === 'string' || decryptable instanceof Error) {
+      ClassLogger.verbose('FcmClient', 'onSocketDataSize', `Failed to decode the message with current size and bytes.`, [
+        this.data.size.packets,
+        decodable,
+        decryptable
+      ])
+
       this.data.size.packets++
-      ClassLogger.verbose('FcmClient', 'onSocketDataSize', `Increasing the packets by 1.`, [this.data.size.packets])
+      ClassLogger.verbose('FcmClient', 'onSocketDataSize', `Increasing the packets by 1 and trying again.`, [this.data.size.packets])
 
       this.onSocketDataSize()
-      ClassLogger.verbose('FcmClient', 'onSocketDataSize', `Failed to decode the message with current size and bytes.`, [decodable, decryptable])
 
       return
     }
+
+    clearTimeout(this.onSocketDataSizeTimeout)
 
     this.data.cursor += this.data.size.packets
     ClassLogger.verbose('FcmClient', 'onSocketDataSize', `Increasing the cursor by ${this.data.size.packets}.`, [this.data.cursor])
@@ -419,6 +430,11 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     ClassLogger.info('FcmClient', 'onSocketDataSize', `Setting state to BYTES.`, [this.data.state])
 
     this.onSocketDataBytes()
+  }
+
+  protected onSocketDataSizeTimeout = (): void => {
+    this.prepareForNextMessage()
+    ClassLogger.warn('FcmClient', 'onSocketDataSizeTimeout', 'The size state has timed out, ready for the next message.')
   }
 
   /**
