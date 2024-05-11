@@ -38,8 +38,6 @@ describe('registerToFCM', () => {
     expect(registration.acg.id).toBeTypeOf('bigint')
     expect(registration.acg.securityToken).toBeTypeOf('bigint')
     expect(registration.token).toBeTypeOf('string')
-
-    console.log(registration.token)
   })
 
   it('works with existing ACG ID and ACG security token', async () => {
