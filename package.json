@@ -37,6 +37,7 @@
   "main": "index.cjs",
   "module": "index.js",
   "name": "@aracna/fcm",
+  "packageManager": "pnpm@9.1.0",
   "peerDependencies": {
     "@aracna/core": ">= 1.1.0"
   },
