@@ -23,6 +23,7 @@ jobs:
           VITE_ACG_ID: ${{ secrets.VITE_ACG_ID }}
           VITE_ACG_SECURITY_TOKEN: ${{ secrets.VITE_ACG_SECURITY_TOKEN }}
           VITE_ACG_TOKEN: ${{ secrets.VITE_ACG_TOKEN }}
+          VITE_ACG_TOKEN_2: ${{ secrets.VITE_ACG_TOKEN_2 }}
           VITE_FCM_SENDER_ID: ${{ secrets.VITE_FCM_SENDER_ID }}
           VITE_FCM_SERVER_KEY: ${{ secrets.VITE_FCM_SERVER_KEY }}
           VITE_FCM_TOKEN: ${{ secrets.VITE_FCM_TOKEN }}
