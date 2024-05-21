@@ -56,11 +56,11 @@
     "build": "rm -rf dist && node esbuild.mjs && cp -rf src/assets dist/assets && pnpm tsc && pnpm api-extractor run --local",
     "generate:proto-definitions": "node scripts/generate-proto-definitions.mjs && pnpm prettier --write src/definitions/proto",
     "generate:proto-ts": "node scripts/generate-proto-ts.mjs && pnpm prettier --write src/assets",
-    "prepublish": "pnpm test && pnpm build && pnpm version patch && cp LICENSE package.json README.md dist",
+    "prepublish": "pnpm test && pnpm build && cp LICENSE package.json README.md dist",
     "test": "vitest run"
   },
   "sideEffects": false,
   "type": "module",
   "types": "index.d.ts",
-  "version": "1.0.26"
+  "version": "1.0.27-rc.0"
 }

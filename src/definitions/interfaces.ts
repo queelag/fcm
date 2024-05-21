@@ -1,5 +1,6 @@
 import { Storage } from '@aracna/core'
 import { FcmApiDefinitions } from './apis/fcm-api-definitions.js'
+import { FcmTopicsApiDefinitions } from './apis/fcm-topics-api-definitions.js'
 import { McsState, McsTag } from './enums.js'
 import { CheckinDefinitions } from './proto/checkin-definitions.js'
 import { McsDefinitions } from './proto/mcs-definitions.js'
@@ -92,11 +93,16 @@ export interface FcmRegistration {
 
 export interface FcmSubscription extends FcmRegistration {}
 
+export interface FcmTopicSubscription extends FcmTopicsApiDefinitions.BatchAddResponseData {}
+export interface FcmTopicUnsubscription extends FcmTopicsApiDefinitions.BatchRemoveResponseData {}
+
 export interface GoogleServiceAccount {
   client_email: string
   private_key: string
   project_id: string
 }
+
+export interface GoogleServiceAccountWithoutProjectID extends Omit<GoogleServiceAccount, 'project_id'> {}
 
 export interface PostAcgRegisterOptions {
   retry?: {
