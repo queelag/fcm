@@ -26,7 +26,6 @@ export type { FcmApiMessageWithTarget, FcmApiNotification } from './definitions/
 export * from './functions/register-to-fcm.js'
 export * from './functions/send-fcm-message.js'
 export * from './functions/subscribe-to-fcm-topic.js'
-export * from './functions/subscribe-to-fcm.js'
 export * from './functions/unsubscribe-from-fcm-topic.js'
 export { ClassLogger as FcmClassLogger } from './loggers/class-logger.js'
 export { FunctionLogger as FcmFunctionLogger } from './loggers/function-logger.js'
