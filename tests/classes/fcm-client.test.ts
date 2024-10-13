@@ -1,4 +1,4 @@
-import { DeferredPromise, FetchError, PromiseState, generateRandomString } from '@aracna/core'
+import { DeferredPromise, FetchError, generateRandomString } from '@aracna/core'
 import { ECDH } from 'crypto'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
@@ -66,7 +66,7 @@ describe('FcmClient', () => {
     client.getSocket()?.write(Buffer.from([McsTag.CLOSE]))
     await promise.instance
 
-    expect(promise.state).toBe(PromiseState.FULFILLED)
+    expect(promise.state).toBe('fulfilled')
   })
 
   it('connects', async () => {
@@ -86,7 +86,7 @@ describe('FcmClient', () => {
     await client.connect()
     await promise.instance
 
-    expect(promise.state).toBe(PromiseState.FULFILLED)
+    expect(promise.state).toBe('fulfilled')
   })
 
   it('logs-in', async () => {
@@ -97,7 +97,7 @@ describe('FcmClient', () => {
     await client.connect()
     await promise.instance
 
-    expect(promise.state).toBe(PromiseState.FULFILLED)
+    expect(promise.state).toBe('fulfilled')
   })
 
   it('logs-in multiple times with the same client instance', async () => {
@@ -108,7 +108,7 @@ describe('FcmClient', () => {
     await client.connect()
     await promise.instance
 
-    expect(promise.state).toBe(PromiseState.FULFILLED)
+    expect(promise.state).toBe('fulfilled')
 
     promise = new DeferredPromise()
 
@@ -116,7 +116,7 @@ describe('FcmClient', () => {
     await client.connect()
     await promise.instance
 
-    expect(promise.state).toBe(PromiseState.FULFILLED)
+    expect(promise.state).toBe('fulfilled')
 
     promise = new DeferredPromise()
 
@@ -124,7 +124,7 @@ describe('FcmClient', () => {
     await client.connect()
     await promise.instance
 
-    expect(promise.state).toBe(PromiseState.FULFILLED)
+    expect(promise.state).toBe('fulfilled')
   })
 
   it('receives the iq', async () => {
@@ -135,7 +135,7 @@ describe('FcmClient', () => {
     await client.connect()
     await promise.instance
 
-    expect(promise.state).toBe(PromiseState.FULFILLED)
+    expect(promise.state).toBe('fulfilled')
   })
 
   it(
