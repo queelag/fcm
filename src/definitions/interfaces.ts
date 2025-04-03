@@ -126,7 +126,7 @@ export interface RegisterToFcmConfig {
     appID: string
     projectID: string
   }
-  vapidKey: string
+  vapidKey?: string
 }
 
 export interface RegisterToFcmOptions {

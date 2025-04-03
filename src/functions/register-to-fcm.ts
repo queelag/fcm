@@ -44,11 +44,11 @@ export async function registerToFCM(config: RegisterToFcmConfig, options?: Regis
   registration = await postFcmRegistrations(
     config.firebase.projectID,
     config.firebase.apiKey,
-    config.vapidKey,
     config.ece.authSecret,
     installation.authToken.token,
     config.ece.publicKey,
-    token
+    token,
+    config.vapidKey
   )
   if (registration instanceof Error) return registration
 

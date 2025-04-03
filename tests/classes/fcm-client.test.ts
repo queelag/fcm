@@ -138,59 +138,51 @@ describe('FcmClient', () => {
     expect(promise.state).toBe('fulfilled')
   })
 
-  it(
-    'emits the message and message-data events',
-    async () => {
-      let pm: DeferredPromise<FcmClientMessage>,
-        pmd: DeferredPromise<FcmClientMessageData>,
-        sent: FcmApiMessage | FcmApiError,
-        message: FcmClientMessage,
-        data: FcmClientMessageData
+  it('emits the message and message-data events', { retry: 4, timeout: 10000 }, async () => {
+    let pm: DeferredPromise<FcmClientMessage>,
+      pmd: DeferredPromise<FcmClientMessageData>,
+      sent: FcmApiMessage | FcmApiError,
+      message: FcmClientMessage,
+      data: FcmClientMessageData
 
-      pm = new DeferredPromise()
-      pmd = new DeferredPromise()
+    pm = new DeferredPromise()
+    pmd = new DeferredPromise()
 
-      client.on('message', (message: FcmClientMessage) => pm.resolve(message))
-      client.on('message-data', (data: FcmClientMessageData) => pmd.resolve(data))
+    client.on('message', (message: FcmClientMessage) => pm.resolve(message))
+    client.on('message-data', (data: FcmClientMessageData) => pmd.resolve(data))
 
-      await client.connect()
+    await client.connect()
 
-      sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, { android: { priority: FcmApiDefinitions.V1.AndroidMessagePriority.HIGH }, token })
-      if (sent instanceof Error) throw sent
+    sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, { android: { priority: FcmApiDefinitions.V1.AndroidMessagePriority.HIGH }, token })
+    if (sent instanceof Error) throw sent
 
-      message = await pm.instance
-      data = await pmd.instance
+    message = await pm.instance
+    data = await pmd.instance
 
-      expect(message.id).toBeTypeOf('string')
-      expect(data.from).toBe(FCM_SENDER_ID)
-    },
-    { retry: 4, timeout: 10000 }
-  )
+    expect(message.id).toBeTypeOf('string')
+    expect(data.from).toBe(FCM_SENDER_ID)
+  })
 
-  it(
-    'handles big messages with multiple async bytes reception',
-    async () => {
-      let promise: DeferredPromise<FcmClientMessage>, sent: FcmApiMessage | FcmApiError, message: FcmClientMessage
+  it('handles big messages with multiple async bytes reception', { retry: 4, timeout: 10000 }, async () => {
+    let promise: DeferredPromise<FcmClientMessage>, sent: FcmApiMessage | FcmApiError, message: FcmClientMessage
 
-      promise = new DeferredPromise()
+    promise = new DeferredPromise()
 
-      client.on('message', (message: FcmClientMessage) => promise.resolve(message))
+    client.on('message', (message: FcmClientMessage) => promise.resolve(message))
 
-      await client.connect()
+    await client.connect()
 
-      sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, {
-        android: { priority: FcmApiDefinitions.V1.AndroidMessagePriority.HIGH },
-        data: {
-          random: generateRandomString({ size: 2048 })
-        },
-        token: token
-      })
-      if (sent instanceof Error) throw sent
+    sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, {
+      android: { priority: FcmApiDefinitions.V1.AndroidMessagePriority.HIGH },
+      data: {
+        random: generateRandomString({ size: 2048 })
+      },
+      token: token
+    })
+    if (sent instanceof Error) throw sent
 
-      message = await promise.instance
+    message = await promise.instance
 
-      expect(message.id).toBeTypeOf('string')
-    },
-    { retry: 4, timeout: 10000 }
-  )
+    expect(message.id).toBeTypeOf('string')
+  })
 })

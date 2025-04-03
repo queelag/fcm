@@ -74,3 +74,9 @@ export const DEFAULT_FCM_CLIENT_STORAGE_KEY: string = 'aracna_fcm_client'
  */
 /** */
 export const PROTOBUF_ROOT: Root = new protobuf.Root()
+
+/**
+ * VAPID
+ */
+/** */
+export const DEFAULT_VAPID_KEY = 'BDOU99-h67HcA6JeFXHbSNMu7e2yNNu3RzoMj8TM4W88jITfq7ZmPvIM1Iv-4_l2LxQcYwhqby2xGpWwzjfAnG4'

@@ -21,11 +21,11 @@ describe('FCM Registrations Requests', () => {
     registration = await postFcmRegistrations(
       FIREBASE_PROJECT_ID,
       FIREBASE_API_KEY,
-      VAPID_KEY,
       ECE_AUTH_SECRET,
       installation.authToken.token,
       ECE_PUBLIC_KEY,
-      ACG_TOKEN
+      ACG_TOKEN,
+      VAPID_KEY
     )
     if (registration instanceof Error) throw registration
 
@@ -52,7 +52,7 @@ describe('FCM Registrations Requests', () => {
     installation = await postFirebaseInstallations(FIREBASE_APP_ID, FIREBASE_PROJECT_ID, FIREBASE_API_KEY)
     if (installation instanceof Error) throw installation
 
-    registration = await postFcmRegistrations(FIREBASE_PROJECT_ID, FIREBASE_API_KEY, VAPID_KEY, auth, installation.authToken.token, ecdh.getPublicKey(), token)
+    registration = await postFcmRegistrations(FIREBASE_PROJECT_ID, FIREBASE_API_KEY, auth, installation.authToken.token, ecdh.getPublicKey(), token, VAPID_KEY)
     if (registration instanceof Error) throw registration
 
     expect(registration.token).toBeTypeOf('string')

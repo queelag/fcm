@@ -369,10 +369,10 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         )
 
         decryptable = tc(() => {
-          let message: McsDefinitions.DataMessageStanza | Error, decrypted: Buffer
+          let message: McsDefinitions.DataMessageStanza, decrypted: Buffer
 
-          message = tc(() => decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor + this.data.size.packets)), false)
-          if (message instanceof Error) return
+          message = decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor + this.data.size.packets))
+          if (!message.raw_data) throw new Error(`The message raw_data is not defined.`)
 
           decrypted = decrypt(Buffer.from(message.raw_data), {
             authSecret: encodeBase64(this.ece.authSecret),
@@ -488,29 +488,33 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         this.emit('message', message)
         ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message event has been emitted.`)
 
-        this.data.received.pids.push(message.persistent_id)
-        ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The persistent id has been pushed.`, this.data.received.pids)
+        if (message.persistent_id) {
+          this.data.received.pids.push(message.persistent_id)
+          ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The persistent id has been pushed.`, this.data.received.pids)
 
-        this.storage.set(this.storageKey, this.data, ['received'])
-        ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The received pids have been stored.`)
+          this.storage.set(this.storageKey, this.data, ['received'])
+          ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The received pids have been stored.`)
+        }
 
         ecdh = createECDH(FCM_ECDH_CURVE_NAME)
         ecdh.setPrivateKey(new Uint8Array(this.ece.privateKey))
 
-        decrypted = decrypt(Buffer.from(message.raw_data), {
-          authSecret: encodeBase64(this.ece.authSecret),
-          dh: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'crypto-key')?.value.slice(3),
-          privateKey: ecdh,
-          salt: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'encryption')?.value.slice(5),
-          version: 'aesgcm'
-        })
-        ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message data has been decrypted.`, decrypted)
+        if (message.raw_data) {
+          decrypted = decrypt(Buffer.from(message.raw_data), {
+            authSecret: encodeBase64(this.ece.authSecret),
+            dh: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'crypto-key')?.value.slice(3),
+            privateKey: ecdh,
+            salt: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'encryption')?.value.slice(5),
+            version: 'aesgcm'
+          })
+          ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message data has been decrypted.`, decrypted)
 
-        data = JSON.parse(decodeText(decrypted))
-        ClassLogger.info('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message data has been parsed.`, data)
+          data = JSON.parse(decodeText(decrypted))
+          ClassLogger.info('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message data has been parsed.`, data)
 
-        this.emit('message-data', data)
-        ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message event has been emitted.`)
+          this.emit('message-data', data)
+          ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message event has been emitted.`)
+        }
 
         break
       }

@@ -4,7 +4,7 @@ import { postFcmSendV1 } from '../../src/requests/fcm-requests'
 import { FCM_TOKEN, GOOGLE_SERVICE_ACCOUNT } from '../definitions/constants'
 
 describe('FCM Requests', () => {
-  it.skip('sends a message', async () => {
+  it('sends a message', async () => {
     let message: FcmApiDefinitions.V1.MessageWithTarget, sent: FcmApiDefinitions.V1.Message | FcmApiDefinitions.V1.Error
 
     message = {

@@ -1,4 +1,4 @@
-import { FetchError, FetchResponse, encodeBase64URL, serializeURLSearchParams, sleep } from '@aracna/core'
+import { FetchError, FetchResponse, encodeBase64URL, parseBigInt, serializeURLSearchParams, sleep } from '@aracna/core'
 import { AcgAPI } from '../apis/acg-api.js'
 import { AcgApiDefinitions } from '../definitions/apis/acg-api-definitions.js'
 import {
@@ -70,8 +70,8 @@ export async function postAcgCheckin(id: bigint = 0n, securityToken: bigint = 0n
 
   result = {
     ...data,
-    android_id: BigInt(data.android_id.toString()),
-    security_token: BigInt(data.security_token.toString())
+    android_id: parseBigInt(data.android_id?.toString()),
+    security_token: parseBigInt(data.security_token?.toString())
   }
   RequestLogger.info('postAcgCheckin', `The checkin response has been defined.`, result)
 

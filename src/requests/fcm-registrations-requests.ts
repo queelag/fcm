@@ -2,15 +2,16 @@ import { FetchError, concatURL, encodeBase64URL } from '@aracna/core'
 import { FcmAPI } from '../apis/fcm-api.js'
 import { FcmRegistrationsAPI } from '../apis/fcm-registrations-api.js'
 import { FcmRegistrationsApiDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'
+import { DEFAULT_VAPID_KEY } from '../definitions/constants.js'
 
 export async function postFcmRegistrations(
   projectID: string,
   apiKey: string,
-  applicationPubKey: string,
   auth: ArrayLike<number>,
   firebaseInstallationsAuth: string,
   p256dh: ArrayLike<number>,
-  token: string
+  token: string,
+  applicationPubKey: string = DEFAULT_VAPID_KEY
 ): Promise<FcmRegistrationsApiDefinitions.RegistrationsResponseData | FetchError> {
   let body: FcmRegistrationsApiDefinitions.RegistrationsRequestBody,
     headers: HeadersInit,
@@ -26,8 +27,10 @@ export async function postFcmRegistrations(
   }
 
   headers = {
+    accept: 'application/json',
+    'content-type': 'application/json',
     'x-goog-api-key': apiKey,
-    'x-goog-firebase-installations-auth': firebaseInstallationsAuth
+    'x-goog-firebase-installations-auth': `FIS ${firebaseInstallationsAuth}`
   }
 
   response = await FcmRegistrationsAPI.post(`projects/${projectID}/registrations`, body, { headers })
