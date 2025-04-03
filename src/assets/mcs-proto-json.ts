@@ -2,6 +2,7 @@ import type { INamespace } from 'protobufjs'
 
 export const MCS_PROTO_JSON: INamespace = {
   options: {
+    syntax: 'proto2',
     optimize_for: 'LITE_RUNTIME'
   },
   nested: {

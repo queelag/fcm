@@ -2,6 +2,7 @@ import type { INamespace } from 'protobufjs'
 
 export const ANDROID_CHECKIN_PROTO_JSON: INamespace = {
   options: {
+    syntax: 'proto2',
     optimize_for: 'LITE_RUNTIME'
   },
   nested: {
