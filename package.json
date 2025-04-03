@@ -51,7 +51,7 @@
   "publishConfig": {
     "directory": "dist"
   },
-  "repository": "https://github.com/aracna/fcm",
+  "repository": "https://github.com/queelag/fcm",
   "scripts": {
     "build": "node esbuild.mjs && pnpm tsc && pnpm api-extractor run --local",
     "generate:proto-definitions": "node scripts/generate-proto-definitions.mjs && pnpm prettier --write src/definitions/proto",
