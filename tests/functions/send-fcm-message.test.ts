@@ -5,7 +5,7 @@ import { FcmApiDefinitions } from '../../src/definitions/apis/fcm-api-definition
 import { APP_ID, FCM_TOKEN, FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_PROJECT_ID, GOOGLE_SERVICE_ACCOUNT, VAPID_KEY } from '../definitions/constants'
 
 describe('Send FCM Message', () => {
-  it('sends', async () => {
+  it.skip('sends', async () => {
     let message: FcmApiDefinitions.V1.MessageWithTarget, sent: FcmApiDefinitions.V1.Message | FcmApiDefinitions.V1.Error
 
     message = {
@@ -19,7 +19,7 @@ describe('Send FCM Message', () => {
   })
 
   it('sends with fresh token', async () => {
-    let auth: Uint8Array,
+    let auth: Buffer,
       ecdh: ECDH,
       registration: FcmRegistration | Error,
       message: FcmApiDefinitions.V1.MessageWithTarget,

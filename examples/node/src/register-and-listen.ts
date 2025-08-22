@@ -18,7 +18,7 @@ const FIREBASE_PROJECT_ID: string = import.meta.env.VITE_FIREBASE_PROJECT_ID
 const VAPID_KEY: string = import.meta.env.VITE_VAPID_KEY
 
 async function register(): Promise<void> {
-  let authSecret: Uint8Array, ecdh: ECDH, registration: FcmRegistration | Error
+  let authSecret: Uint8Array<ArrayBuffer>, ecdh: ECDH, registration: FcmRegistration | Error
 
   if (await DiskStorage.has('fcm')) {
     return

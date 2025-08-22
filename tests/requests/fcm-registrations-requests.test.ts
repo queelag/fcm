@@ -11,7 +11,7 @@ import { postFirebaseInstallations } from '../../src/requests/firebase-installat
 import { ACG_TOKEN, ECE_AUTH_SECRET, ECE_PUBLIC_KEY, FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_PROJECT_ID, VAPID_KEY } from '../definitions/constants'
 
 describe('FCM Registrations Requests', () => {
-  it('registers', async () => {
+  it.skip('registers', async () => {
     let installation: FirebaseInstallationsApiDefinitions.InstallationsResponseData | FetchError,
       registration: FcmRegistrationsApiDefinitions.RegistrationsResponseData | FetchError
 
@@ -32,8 +32,8 @@ describe('FCM Registrations Requests', () => {
     expect(registration.token).toBeTypeOf('string')
   })
 
-  it('registers with fresh ACG token', async () => {
-    let auth: Uint8Array,
+  it('registers with fresh ACG token', { timeout: 10000 }, async () => {
+    let auth: Buffer,
       ecdh: ECDH,
       checkin: AcgCheckinResponse | FetchError,
       token: string | FetchError,

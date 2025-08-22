@@ -2,7 +2,7 @@ import { encodeBase64URL } from '@aracna/core'
 import { randomBytes } from 'crypto'
 
 export function generateFirebaseFID() {
-  let fid: Uint8Array
+  let fid: Buffer
 
   // A valid FID has exactly 22 base64 characters, which is 132 bits, or 16.5
   // bytes. our implementation generates a 17 byte array instead.

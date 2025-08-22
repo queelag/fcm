@@ -20,6 +20,6 @@ export function createFcmECDH(): ECDH {
  *
  * [Aracna Reference](https://aracna.dariosechi.it/fcm/utils/crypto)
  */
-export function generateFcmAuthSecret(): Uint8Array {
+export function generateFcmAuthSecret(): Buffer {
   return randomBytes(16)
 }

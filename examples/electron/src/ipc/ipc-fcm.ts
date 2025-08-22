@@ -41,7 +41,7 @@ ipcMain.handle('fcm:get-token', async () => {
 ipcMain.handle('fcm:is-registered', () => DiskStorage.has('fcm'))
 
 ipcMain.handle('fcm:register', async () => {
-  let authSecret: Uint8Array, ecdh: ECDH, registration: FcmRegistration | Error, item: StorageItem | Error, set: void | Error
+  let authSecret: Buffer, ecdh: ECDH, registration: FcmRegistration | Error, item: StorageItem | Error, set: void | Error
 
   if (await DiskStorage.has('fcm')) {
     return

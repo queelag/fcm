@@ -15,7 +15,7 @@ import {
 
 describe('registerToFCM', () => {
   it('works', async () => {
-    let auth: Uint8Array, ecdh: ECDH, registration: FcmRegistration | Error
+    let auth: Buffer, ecdh: ECDH, registration: FcmRegistration | Error
 
     auth = generateFcmAuthSecret()
     ecdh = createFcmECDH()

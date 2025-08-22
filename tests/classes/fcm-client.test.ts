@@ -20,7 +20,7 @@ import { McsTag } from '../../src/definitions/enums'
 import { APP_ID, FCM_SENDER_ID, FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_PROJECT_ID, GOOGLE_SERVICE_ACCOUNT, VAPID_KEY } from '../definitions/constants'
 
 describe('FcmClient', () => {
-  let auth: Uint8Array, ecdh: ECDH, registration: FcmRegistration | Error, acg: FcmClientACG, ece: FcmClientECE, token: string, client: FcmClient
+  let auth: Buffer, ecdh: ECDH, registration: FcmRegistration | Error, acg: FcmClientACG, ece: FcmClientECE, token: string, client: FcmClient
 
   afterEach(async () => {
     await client.disconnect()
