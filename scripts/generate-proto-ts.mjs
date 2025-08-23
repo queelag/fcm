@@ -15,9 +15,9 @@ for (let path of await glob('src/assets/*.json')) {
   let name, json, ts
 
   name = getSnakeCaseString(path.replace('src/assets/', '').replace('.json', ''))
-  json = await readFile(path, 'utf8')
+  json = JSON.parse(await readFile(path, 'utf8'), (key, value) => (key === 'edition' ? undefined : value))
 
-  ts = [`import type { INamespace } from 'protobufjs'`, ``, `export const ${name.toUpperCase()}_PROTO_JSON: INamespace = ${json}`].join('\n')
+  ts = [`import type { INamespace } from 'protobufjs'`, ``, `export const ${name.toUpperCase()}_PROTO_JSON: INamespace = ${JSON.stringify(json)}`].join('\n')
 
   await rm(path)
   await writeFile(path.replace('.json', '-proto-json.ts'), ts)

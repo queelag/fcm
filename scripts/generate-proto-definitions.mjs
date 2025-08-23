@@ -28,13 +28,16 @@ for (let path of await glob('src/definitions/proto/*.ts')) {
   ts = await readFile(path, 'utf8')
 
   if (name === 'checkin') {
-    ts = ts.replace('import { type AndroidCheckinProto }', 'import type { AndroidCheckinDefinitions }')
-    ts = ts.replace('android-checkin.js', 'android-checkin-definitions.js')
-    ts = ts.replace('AndroidCheckinProto', 'AndroidCheckinDefinitions.AndroidCheckinProto')
+    ts = ts
+      .replace('import type { AndroidCheckinProto }', 'import type { AndroidCheckinDefinitions }')
+      .replace('android-checkin.js', 'android-checkin-definitions.js')
+      .replace('AndroidCheckinProto', 'AndroidCheckinDefinitions.AndroidCheckinProto')
   }
 
-  ts = ts.replace('export const protobufPackage', `export namespace ${getPascalCaseString(name)}Definitions {\nexport const protobufPackage`)
-  ts = ts.replace('if (_m0.util.Long !== Long) {', '}\n\nif (_m0.util.Long !== Long) {')
+  ts = ts
+    .replace('export const protobufPackage', `export namespace ${getPascalCaseString(name)}Definitions {\nexport const protobufPackage`)
+    .replace('if (_m0.util.Long !== Long) {', '}\n\nif (_m0.util.Long !== Long) {')
+
   ts += '}'
 
   await rm(path)
