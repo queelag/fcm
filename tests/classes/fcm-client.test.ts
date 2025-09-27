@@ -1,5 +1,5 @@
 import { DeferredPromise, FetchError, generateRandomString } from '@aracna/core'
-import { ECDH } from 'crypto'
+import { ECDH, randomBytes } from 'crypto'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
   FcmApiError,
@@ -184,5 +184,48 @@ describe('FcmClient', () => {
     message = await promise.instance
 
     expect(message.id).toBeTypeOf('string')
+  })
+
+  it.skip('handles multiple big messages with multiple async bytes reception', { retry: 4, timeout: 10000 }, async () => {
+    let promise: DeferredPromise<void>, sent: (FcmApiMessage | FcmApiError)[], messages: FcmClientMessageData[]
+
+    promise = new DeferredPromise()
+    messages = []
+
+    client.on('message-data', (data: FcmClientMessageData) => {
+      if (!sent) {
+        return
+      }
+
+      if (sent.some((s: FcmApiMessage) => s.name?.includes(data.fcmMessageId))) {
+        messages.push(data)
+      }
+
+      if (messages.length >= sent.length) {
+        promise.resolve()
+      }
+    })
+
+    await client.connect()
+
+    sent = await Promise.all(
+      new Array(2).fill(
+        sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, {
+          android: { priority: FcmApiDefinitions.V1.AndroidMessagePriority.HIGH },
+          data: {
+            // @ts-expect-error
+            random: generateRandomString({ random: randomBytes, size: 2048 })
+          },
+          token: token
+        })
+      )
+    )
+    if (sent.some((s) => s instanceof Error)) throw sent.find((s) => s instanceof Error)
+
+    await promise.instance
+
+    for (let s of sent) {
+      expect(s.name?.includes(messages[0].fcmMessageId)).toBeTruthy()
+    }
   })
 })

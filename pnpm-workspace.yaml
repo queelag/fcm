@@ -1,3 +1,6 @@
 onlyBuiltDependencies:
   - esbuild
   - protobufjs
+
+packages:
+  - packages/@aracna/*
