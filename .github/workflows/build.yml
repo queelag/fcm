@@ -19,10 +19,7 @@ jobs:
         run: pnpm install && pnpm install -D @aracna/core@latest
       - name: Test Coverage
         run: pnpm vitest run --coverage
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995 # v8.1.0
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           VITE_ACG_ID: ${{ secrets.VITE_ACG_ID }}
           VITE_ACG_SECURITY_TOKEN: ${{ secrets.VITE_ACG_SECURITY_TOKEN }}
           VITE_ACG_TOKEN: ${{ secrets.VITE_ACG_TOKEN }}
@@ -35,3 +32,7 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
           VITE_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.VITE_GOOGLE_SERVICE_ACCOUNT }}
           VITE_VAPID_KEY: ${{ secrets.VITE_VAPID_KEY }}
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995 # v8.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
