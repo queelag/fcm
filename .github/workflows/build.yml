@@ -2,38 +2,24 @@ name: Build
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
-  sonarcloud:
-    name: SonarCloud
+  sonarqube:
+    name: SonarQube
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          fetch-depth: 0
-      - name: Enables Corepack
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Enable Corepack
         run: corepack enable
       - name: Install Dependencies
         run: pnpm install
       - name: Test Coverage
         run: pnpm vitest run --coverage
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995 # v8.1.0
         env:
-          VITE_ACG_ID: ${{ secrets.VITE_ACG_ID }}
-          VITE_ACG_SECURITY_TOKEN: ${{ secrets.VITE_ACG_SECURITY_TOKEN }}
-          VITE_ACG_TOKEN: ${{ secrets.VITE_ACG_TOKEN }}
-          VITE_FCM_SENDER_ID: ${{ secrets.VITE_FCM_SENDER_ID }}
-          VITE_FCM_SERVER_KEY: ${{ secrets.VITE_FCM_SERVER_KEY }}
-          VITE_FCM_TOKEN: ${{ secrets.VITE_FCM_TOKEN }}
-          VITE_FCM_TOKEN_2: ${{ secrets.VITE_FCM_TOKEN_2 }}
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.VITE_GOOGLE_SERVICE_ACCOUNT }}
-          VITE_VAPID_KEY: ${{ secrets.VITE_VAPID_KEY }}
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
