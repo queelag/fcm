@@ -1,10 +1,10 @@
-import { Storage } from '@aracna/core'
-import { FcmApiDefinitions } from './apis/fcm-api-definitions.js'
-import { FcmTopicsApiDefinitions } from './apis/fcm-topics-api-definitions.js'
-import { McsState, McsTag } from './enums.js'
-import { CheckinDefinitions } from './proto/checkin-definitions.js'
-import { McsDefinitions } from './proto/mcs-definitions.js'
-import { FcmApiNotification } from './types.js'
+import type { Storage } from '@aracna/core'
+import type { FcmApiDefinitions } from './apis/fcm-api-definitions.js'
+import type { FcmTopicsApiDefinitions } from './apis/fcm-topics-api-definitions.js'
+import type { McsState, McsTag } from './enums.js'
+import type { CheckinDefinitions } from './proto/checkin-definitions.js'
+import type { McsDefinitions } from './proto/mcs-definitions.js'
+import type { FcmApiNotification } from './types.js'
 
 export interface AcgCheckinResponse extends Omit<CheckinDefinitions.AndroidCheckinResponse, 'android_id' | 'security_token'> {
   android_id: bigint

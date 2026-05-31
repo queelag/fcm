@@ -1,7 +1,18 @@
-import { DeferredPromise, EventEmitter, FetchError, MemoryStorage, Storage, clearTimeout, decodeText, encodeBase64, setTimeout, tc } from '@aracna/core'
-import { ECDH, createECDH } from 'crypto'
+import {
+  DeferredPromise,
+  EventEmitter,
+  type FetchError,
+  MemoryStorage,
+  type Storage,
+  clearTimeout,
+  decodeText,
+  encodeBase64,
+  setTimeout,
+  tc
+} from '@aracna/core'
+import { type ECDH, createECDH } from 'crypto'
 import { decrypt } from 'http_ece'
-import { ConnectionOptions, TLSSocket, connect } from 'tls'
+import { type ConnectionOptions, type TLSSocket, connect } from 'tls'
 import {
   ACG_REGISTER_CHROME_VERSION,
   DEFAULT_FCM_CLIENT_ACG,
@@ -20,7 +31,7 @@ import {
   MTALK_GOOGLE_PORT
 } from '../definitions/constants.js'
 import { McsState, McsTag } from '../definitions/enums.js'
-import {
+import type {
   AcgCheckinResponse,
   FcmClientACG,
   FcmClientData,

@@ -1,6 +1,6 @@
-import { FetchError } from '@aracna/core'
+import { type FetchError } from '@aracna/core'
 import { FirebaseInstallationsAPI } from '../apis/firebase-installations-api.js'
-import { FirebaseInstallationsApiDefinitions } from '../definitions/apis/firebase-installations-api-definitions.js'
+import type { FirebaseInstallationsApiDefinitions } from '../definitions/apis/firebase-installations-api-definitions.js'
 import { generateFirebaseFID } from '../utils/firebase-utils.js'
 
 export async function postFirebaseInstallations(

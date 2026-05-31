@@ -1,4 +1,4 @@
-import { Credentials, JWT } from 'google-auth-library'
+import { type Credentials, JWT } from 'google-auth-library'
 import { GOOGLE_AUTH_JWT_SCOPES } from '../definitions/constants.js'
 
 export async function getGoogleAuthAccessToken(email: string, key: string): Promise<string | undefined> {

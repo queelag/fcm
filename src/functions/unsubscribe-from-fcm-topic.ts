@@ -1,4 +1,4 @@
-import { FcmTopicUnsubscription, GoogleServiceAccountWithoutProjectID } from '../definitions/interfaces.js'
+import type { FcmTopicUnsubscription, GoogleServiceAccountWithoutProjectID } from '../definitions/interfaces.js'
 import { postFcmTopicsBatchRemove } from '../requests/fcm-topics-requests.js'
 
 export async function unsubscribeFromFcmTopic(

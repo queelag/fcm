@@ -1,6 +1,6 @@
 import protobuf, { Root } from 'protobufjs'
 import { McsState, McsTag } from './enums.js'
-import { FcmClientACG, FcmClientData, FcmClientECE } from './interfaces.js'
+import type { FcmClientACG, FcmClientData, FcmClientECE } from './interfaces.js'
 
 /**
  * ACG

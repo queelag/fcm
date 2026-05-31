@@ -1,7 +1,8 @@
-import { DeferredPromise, FetchError, generateRandomString } from '@aracna/core'
+import { DeferredPromise, encodeBase64, FetchError } from '@aracna/core'
 import { ECDH, randomBytes } from 'crypto'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
+  createFcmECDH,
   FcmApiError,
   FcmApiMessage,
   FcmClient,
@@ -10,7 +11,6 @@ import {
   FcmClientMessage,
   FcmClientMessageData,
   FcmRegistration,
-  createFcmECDH,
   generateFcmAuthSecret,
   registerToFCM,
   sendFcmMessage
@@ -175,7 +175,7 @@ describe('FcmClient', () => {
     sent = await sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, {
       android: { priority: FcmApiDefinitions.V1.AndroidMessagePriority.HIGH },
       data: {
-        random: generateRandomString({ size: 2048 })
+        random: encodeBase64(randomBytes(2048))
       },
       token: token
     })
@@ -213,8 +213,7 @@ describe('FcmClient', () => {
         sendFcmMessage(GOOGLE_SERVICE_ACCOUNT, {
           android: { priority: FcmApiDefinitions.V1.AndroidMessagePriority.HIGH },
           data: {
-            // @ts-expect-error
-            random: generateRandomString({ random: randomBytes, size: 2048 })
+            random: encodeBase64(randomBytes(2048))
           },
           token: token
         })

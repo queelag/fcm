@@ -1,15 +1,15 @@
 import { FetchError, FetchResponse, encodeBase64URL, parseBigInt, serializeURLSearchParams, sleep } from '@aracna/core'
 import { AcgAPI } from '../apis/acg-api.js'
-import { AcgApiDefinitions } from '../definitions/apis/acg-api-definitions.js'
+import type { AcgApiDefinitions } from '../definitions/apis/acg-api-definitions.js'
 import {
   ACG_REGISTER_CHROME_VERSION,
   ACG_REGISTER_SENDER,
   DEFAULT_ACG_REGISTER_MAX_RETRIES,
   DEFAULT_ACG_REGISTER_RETRY_DELAY
 } from '../definitions/constants.js'
-import { AcgCheckinResponse, PostAcgRegisterOptions } from '../definitions/interfaces.js'
+import type { AcgCheckinResponse, PostAcgRegisterOptions } from '../definitions/interfaces.js'
 import { AndroidCheckinDefinitions } from '../definitions/proto/android-checkin-definitions.js'
-import { CheckinDefinitions } from '../definitions/proto/checkin-definitions.js'
+import type { CheckinDefinitions } from '../definitions/proto/checkin-definitions.js'
 import { RequestLogger } from '../loggers/request-logger.js'
 import { CheckinProto } from '../proto/checkin-proto.js'
 import { parseLong } from '../utils/long-utils.js'

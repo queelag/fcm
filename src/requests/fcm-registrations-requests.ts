@@ -1,7 +1,7 @@
-import { FetchError, concatURL, encodeBase64URL } from '@aracna/core'
+import { type FetchError, concatURL, encodeBase64URL } from '@aracna/core'
 import { FcmAPI } from '../apis/fcm-api.js'
 import { FcmRegistrationsAPI } from '../apis/fcm-registrations-api.js'
-import { FcmRegistrationsApiDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'
+import type { FcmRegistrationsApiDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'
 import { DEFAULT_VAPID_KEY } from '../definitions/constants.js'
 
 export async function postFcmRegistrations(

@@ -1,4 +1,4 @@
-import { FcmTopicSubscription, GoogleServiceAccountWithoutProjectID } from '../definitions/interfaces.js'
+import type { FcmTopicSubscription, GoogleServiceAccountWithoutProjectID } from '../definitions/interfaces.js'
 import { postFcmTopicsBatchAdd } from '../requests/fcm-topics-requests.js'
 
 export async function subscribeToFcmTopic(

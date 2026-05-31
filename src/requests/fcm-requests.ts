@@ -1,5 +1,5 @@
 import { FcmAPI } from '../apis/fcm-api.js'
-import { FcmApiDefinitions } from '../definitions/apis/fcm-api-definitions.js'
+import type { FcmApiDefinitions } from '../definitions/apis/fcm-api-definitions.js'
 import { GoogleServiceAccount } from '../definitions/interfaces.js'
 import { getGoogleAuthAccessToken } from '../utils/google-auth-utils.js'
 

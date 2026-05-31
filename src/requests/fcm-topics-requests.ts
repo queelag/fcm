@@ -1,6 +1,6 @@
 import { FcmTopicsAPI } from '../apis/fcm-topics-api.js'
-import { FcmTopicsApiDefinitions } from '../definitions/apis/fcm-topics-api-definitions.js'
-import { GoogleServiceAccountWithoutProjectID } from '../definitions/interfaces.js'
+import type { FcmTopicsApiDefinitions } from '../definitions/apis/fcm-topics-api-definitions.js'
+import type { GoogleServiceAccountWithoutProjectID } from '../definitions/interfaces.js'
 import { getGoogleAuthAccessToken } from '../utils/google-auth-utils.js'
 
 export async function postFcmTopicsBatchAdd(

@@ -1,4 +1,4 @@
-import { FetchError, FetchResponse } from '@aracna/core'
+import type { FetchError, FetchResponse } from '@aracna/core'
 
 export namespace FcmTopicsApiDefinitions {
   export interface BatchAddRequestBody {

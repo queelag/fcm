@@ -1,4 +1,4 @@
-import { FetchResponse } from '@aracna/core'
+import type { FetchResponse } from '@aracna/core'
 
 export namespace AcgApiDefinitions {
   export interface CheckinResponse extends FetchResponse<ArrayBuffer> {}

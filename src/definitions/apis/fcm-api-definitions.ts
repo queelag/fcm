@@ -1,4 +1,4 @@
-import { FetchError, FetchResponse } from '@aracna/core'
+import type { FetchError, FetchResponse } from '@aracna/core'
 
 export namespace FcmApiDefinitions {
   export interface SubscribeRequestBody {
@@ -24,7 +24,7 @@ export namespace FcmApiDefinitions {
       /**
        * Arbitrary key/value payload. If present, it will [override google.firebase.fcm.v1.Message.data](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#Message.FIELDS.data).
        *
-       * An object containing a list of "key": value pairs. Example: { "name": "wrench", "mass": "1.3kg", "count": "3" }.
+       * An object containing a list of "key": value pairs. Example: \{ "name": "wrench", "mass": "1.3kg", "count": "3" \}.
        */
       data?: Record<string, string>
       /**
@@ -185,7 +185,7 @@ export namespace FcmApiDefinitions {
        *
        * The backend sets a default value for apns-expiration of 30 days and a default value for apns-priority of 10 if not explicitly set.
        *
-       * An object containing a list of "key": value pairs. Example: { "name": "wrench", "mass": "1.3kg", "count": "3" }.
+       * An object containing a list of "key": value pairs. Example: \{ "name": "wrench", "mass": "1.3kg", "count": "3" \}.
        */
       headers?: Record<string, string>
       /**
@@ -314,7 +314,7 @@ export namespace FcmApiDefinitions {
       /**
        * Input only. Arbitrary key/value payload, which must be UTF-8 encoded. The key should not be a reserved word ("from", "message_type", or any word starting with "google" or "gcm"). When sending payloads containing only data fields to iOS devices, only normal priority ("apns-priority": "5") is allowed in [ApnsConfig](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#apnsconfig).
        *
-       * An object containing a list of "key": value pairs. Example: { "name": "wrench", "mass": "1.3kg", "count": "3" }.
+       * An object containing a list of "key": value pairs. Example: \{ "name": "wrench", "mass": "1.3kg", "count": "3" \}.
        */
       data?: Record<string, string>
       /**
@@ -322,7 +322,7 @@ export namespace FcmApiDefinitions {
        */
       fcm_options?: FcmOptions
       /**
-       * Output Only. The identifier of the message sent, in the format of projects/{project_id}/messages/{message_id}.
+       * Output Only. The identifier of the message sent, in the format of projects/\{project_id\}/messages/\{message_id\}.
        */
       name?: string
       /**
@@ -401,7 +401,7 @@ export namespace FcmApiDefinitions {
       /**
        * Arbitrary key/value payload. If present, it will [override google.firebase.fcm.v1.Message.data](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#Message.FIELDS.data).
        *
-       * An object containing a list of "key": value pairs. Example: { "name": "wrench", "mass": "1.3kg", "count": "3" }.
+       * An object containing a list of "key": value pairs. Example: \{ "name": "wrench", "mass": "1.3kg", "count": "3" \}.
        */
       data?: Record<string, string>
       /**
@@ -411,7 +411,7 @@ export namespace FcmApiDefinitions {
       /**
        * HTTP headers defined in webpush protocol. Refer to Webpush protocol for supported headers, e.g. "TTL": "15".
        *
-       * An object containing a list of "key": value pairs. Example: { "name": "wrench", "mass": "1.3kg", "count": "3" }.
+       * An object containing a list of "key": value pairs. Example: \{ "name": "wrench", "mass": "1.3kg", "count": "3" \}.
        */
       headers?: Record<string, string>
       /**

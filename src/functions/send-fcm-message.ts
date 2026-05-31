@@ -1,5 +1,5 @@
-import { FcmApiError, FcmApiMessage, GoogleServiceAccount } from '../definitions/interfaces.js'
-import { FcmApiMessageWithTarget } from '../definitions/types.js'
+import type { FcmApiError, FcmApiMessage, GoogleServiceAccount } from '../definitions/interfaces.js'
+import type { FcmApiMessageWithTarget } from '../definitions/types.js'
 import { postFcmSendV1 } from '../requests/fcm-requests.js'
 
 /**
