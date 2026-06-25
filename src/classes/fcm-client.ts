@@ -127,7 +127,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     checkin = await postAcgCheckin(this.acg.id, this.acg.securityToken)
     if (checkin instanceof Error) return checkin
 
-    this.socket = connect(MTALK_GOOGLE_PORT, MTALK_GOOGLE_HOST, { rejectUnauthorized: false, ...options })
+    this.socket = connect(MTALK_GOOGLE_PORT, MTALK_GOOGLE_HOST, options)
     this.socket.setKeepAlive(true)
 
     this.socket.on('close', this.onSocketClose)
