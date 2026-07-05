@@ -59,13 +59,13 @@ export namespace FcmApiDefinitions {
 
     export enum AndroidMessagePriority {
       /**
-       * Default priority for data messages. Normal priority messages won't open network connections on a sleeping device, and their delivery may be delayed to conserve the battery. For less time-sensitive messages, such as notifications of new email or other data to sync, choose normal delivery priority.
-       */
-      NORMAL = 'NORMAL',
-      /**
        * Default priority for notification messages. FCM attempts to deliver high priority messages immediately, allowing the FCM service to wake a sleeping device when possible and open a network connection to your app server. Apps with instant messaging, chat, or voice call alerts, for example, generally need to open a network connection and make sure FCM delivers the message to the device without delay. Set high priority if the message is time-critical and requires the user's immediate interaction, but beware that setting your messages to high priority contributes more to battery drain compared with normal priority messages.
        */
-      HIGH = 'HIGH'
+      HIGH = 'HIGH',
+      /**
+       * Default priority for data messages. Normal priority messages won't open network connections on a sleeping device, and their delivery may be delayed to conserve the battery. For less time-sensitive messages, such as notifications of new email or other data to sync, choose normal delivery priority.
+       */
+      NORMAL = 'NORMAL'
     }
 
     export type AndroidNotification<T extends object = object> = Notification<T> & {
@@ -239,37 +239,37 @@ export namespace FcmApiDefinitions {
 
     export enum ErrorCode {
       /**
-       * No more information is available about this error.
+       * (HTTP error code = 500) An unknown internal error occurred.
        */
-      UNSPECIFIED_ERROR = 'UNSPECIFIED_ERROR',
+      INTERNAL = 'INTERNAL',
       /**
        * (HTTP error code = 400) Request parameters were invalid. An extension of type google.rpc.BadRequest is returned to specify which field was invalid.
        */
       INVALID_ARGUMENT = 'INVALID_ARGUMENT',
       /**
-       * (HTTP error code = 404) App instance was unregistered from FCM. This usually means that the token used is no longer valid and a new one must be used.
+       * (HTTP error code = 429) Sending limit exceeded for the message target. An extension of type google.rpc.QuotaFailure is returned to specify which quota was exceeded.
        */
-      UNREGISTERED = 'UNREGISTERED',
+      QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
       /**
        * (HTTP error code = 403) The authenticated sender ID is different from the sender ID for the registration token.
        */
       SENDER_ID_MISMATCH = 'SENDER_ID_MISMATCH',
       /**
-       * (HTTP error code = 429) Sending limit exceeded for the message target. An extension of type google.rpc.QuotaFailure is returned to specify which quota was exceeded.
+       * (HTTP error code = 401) APNs certificate or web push auth key was invalid or missing.
        */
-      QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
+      THIRD_PARTY_AUTH_ERROR = 'THIRD_PARTY_AUTH_ERROR',
       /**
        * (HTTP error code = 503) The server is overloaded.
        */
       UNAVAILABLE = 'UNAVAILABLE',
       /**
-       * (HTTP error code = 500) An unknown internal error occurred.
+       * (HTTP error code = 404) App instance was unregistered from FCM. This usually means that the token used is no longer valid and a new one must be used.
        */
-      INTERNAL = 'INTERNAL',
+      UNREGISTERED = 'UNREGISTERED',
       /**
-       * (HTTP error code = 401) APNs certificate or web push auth key was invalid or missing.
+       * No more information is available about this error.
        */
-      THIRD_PARTY_AUTH_ERROR = 'THIRD_PARTY_AUTH_ERROR'
+      UNSPECIFIED_ERROR = 'UNSPECIFIED_ERROR'
     }
 
     export interface FcmError {
@@ -372,18 +372,6 @@ export namespace FcmApiDefinitions {
 
     export enum NotificationPriority {
       /**
-       * If priority is unspecified, notification priority is set to PRIORITY_DEFAULT.
-       */
-      PRIORITY_UNSPECIFIED = 'PRIORITY_UNSPECIFIED',
-      /**
-       * Lowest notification priority. Notifications with this PRIORITY_MIN might not be shown to the user except under special circumstances, such as detailed notification logs.
-       */
-      PRIORITY_MIN = 'PRIORITY_MIN',
-      /**
-       * Lower notification priority. The UI may choose to show the notifications smaller, or at a different position in the list, compared with notifications with PRIORITY_DEFAULT.
-       */
-      PRIORITY_LOW = 'PRIORITY_LOW',
-      /**
        * Default notification priority. If the application does not prioritize its own notifications, use this value for all notifications.
        */
       PRIORITY_DEFAULT = 'PRIORITY_DEFAULT',
@@ -392,9 +380,21 @@ export namespace FcmApiDefinitions {
        */
       PRIORITY_HIGH = 'PRIORITY_HIGH',
       /**
+       * Lower notification priority. The UI may choose to show the notifications smaller, or at a different position in the list, compared with notifications with PRIORITY_DEFAULT.
+       */
+      PRIORITY_LOW = 'PRIORITY_LOW',
+      /**
        * Highest notification priority. Use this for the application's most important items that require the user's prompt attention or input.
        */
-      PRIORITY_MAX = 'PRIORITY_MAX'
+      PRIORITY_MAX = 'PRIORITY_MAX',
+      /**
+       * Lowest notification priority. Notifications with this PRIORITY_MIN might not be shown to the user except under special circumstances, such as detailed notification logs.
+       */
+      PRIORITY_MIN = 'PRIORITY_MIN',
+      /**
+       * If priority is unspecified, notification priority is set to PRIORITY_DEFAULT.
+       */
+      PRIORITY_UNSPECIFIED = 'PRIORITY_UNSPECIFIED'
     }
 
     export interface WebpushConfig {
@@ -436,10 +436,6 @@ export namespace FcmApiDefinitions {
 
     export enum Visibility {
       /**
-       * If unspecified, default to Visibility.PRIVATE.
-       */
-      VISIBILITY_UNSPECIFIED = 'VISIBILITY_UNSPECIFIED',
-      /**
        * Show this notification on all lockscreens, but conceal sensitive or private information on secure lockscreens.
        */
       PRIVATE = 'PRIVATE',
@@ -450,7 +446,11 @@ export namespace FcmApiDefinitions {
       /**
        * Do not reveal any part of this notification on a secure lockscreen.
        */
-      SECRET = 'SECRET'
+      SECRET = 'SECRET',
+      /**
+       * If unspecified, default to Visibility.PRIVATE.
+       */
+      VISIBILITY_UNSPECIFIED = 'VISIBILITY_UNSPECIFIED'
     }
   }
 }

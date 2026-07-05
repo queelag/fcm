@@ -5,309 +5,259 @@
 // source: mcs.proto
 
 /* eslint-disable */
-import Long from "long";
+import Long from 'long'
 
 export namespace McsDefinitions {
-export const protobufPackage = "mcs_proto";
+  export const protobufPackage = 'mcs_proto'
 
-/** TAG: 0 */
-export interface HeartbeatPing {
-  stream_id?: number | undefined;
-  last_stream_id_received?: number | undefined;
-  status?: Long | undefined;
-}
+  /** TAG: 0 */
+  export interface HeartbeatPing {
+    last_stream_id_received?: number | undefined
+    status?: Long | undefined
+    stream_id?: number | undefined
+  }
 
-/** TAG: 1 */
-export interface HeartbeatAck {
-  stream_id?: number | undefined;
-  last_stream_id_received?: number | undefined;
-  status?: Long | undefined;
-}
+  /** TAG: 1 */
+  export interface HeartbeatAck {
+    last_stream_id_received?: number | undefined
+    status?: Long | undefined
+    stream_id?: number | undefined
+  }
 
-export interface ErrorInfo {
-  code: number;
-  message?: string | undefined;
-  type?: string | undefined;
-  extension?: Extension | undefined;
-}
+  export interface ErrorInfo {
+    code: number
+    extension?: Extension | undefined
+    message?: string | undefined
+    type?: string | undefined
+  }
 
-export interface Setting {
-  name: string;
-  value: string;
-}
+  export interface Setting {
+    name: string
+    value: string
+  }
 
-export interface HeartbeatStat {
-  ip: string;
-  timeout: boolean;
-  interval_ms: number;
-}
+  export interface HeartbeatStat {
+    interval_ms: number
+    ip: string
+    timeout: boolean
+  }
 
-export interface HeartbeatConfig {
-  upload_stat?: boolean | undefined;
-  ip?: string | undefined;
-  interval_ms?: number | undefined;
-}
+  export interface HeartbeatConfig {
+    interval_ms?: number | undefined
+    ip?: string | undefined
+    upload_stat?: boolean | undefined
+  }
 
-/**
- * ClientEvents are used to inform the server of failed and successful
- * connections.
- */
-export interface ClientEvent {
-  /** Common fields [1-99] */
-  type?:
-    | ClientEventType
-    | undefined;
-  /** Fields for DISCARDED_EVENTS messages [100-199] */
-  number_discarded_events?:
-    | number
-    | undefined;
   /**
-   * Fields for FAILED_CONNECTION and SUCCESSFUL_CONNECTION messages [200-299]
-   * Network type is a value in net::NetworkChangeNotifier::ConnectionType.
+   * ClientEvents are used to inform the server of failed and successful
+   * connections.
    */
-  network_type?: number | undefined;
-  time_connection_started_ms?: Long | undefined;
-  time_connection_ended_ms?:
-    | Long
-    | undefined;
-  /** Error code should be a net::Error value. */
-  error_code?:
-    | number
-    | undefined;
-  /** Fields for SUCCESSFUL_CONNECTION messages [300-399] */
-  time_connection_established_ms?: Long | undefined;
-}
+  export interface ClientEvent {
+    /** Error code should be a net::Error value. */
+    error_code?: number | undefined
+    /**
+     * Fields for FAILED_CONNECTION and SUCCESSFUL_CONNECTION messages [200-299]
+     * Network type is a value in net::NetworkChangeNotifier::ConnectionType.
+     */
+    network_type?: number | undefined
+    /** Fields for DISCARDED_EVENTS messages [100-199] */
+    number_discarded_events?: number | undefined
+    time_connection_ended_ms?: Long | undefined
+    /** Fields for SUCCESSFUL_CONNECTION messages [300-399] */
+    time_connection_established_ms?: Long | undefined
+    time_connection_started_ms?: Long | undefined
+    /** Common fields [1-99] */
+    type?: ClientEventType | undefined
+  }
 
-export enum ClientEventType {
-  UNKNOWN = 0,
-  /** DISCARDED_EVENTS - Count of discarded events if the buffer filled up and was trimmed. */
-  DISCARDED_EVENTS = 1,
+  export enum ClientEventType {
+    UNKNOWN = 0,
+    /** DISCARDED_EVENTS - Count of discarded events if the buffer filled up and was trimmed. */
+    DISCARDED_EVENTS = 1,
+    /**
+     * FAILED_CONNECTION - Failed connection event: the connection failed to be established or we
+     * had a login error.
+     */
+    FAILED_CONNECTION = 2,
+    /**
+     * SUCCESSFUL_CONNECTION - Successful connection event: information about the last successful
+     * connection, including the time at which it was established.
+     */
+    SUCCESSFUL_CONNECTION = 3,
+    UNRECOGNIZED = -1
+  }
+
+  /** TAG: 2 */
+  export interface LoginRequest {
+    account_id?: Long | undefined
+    adaptive_heartbeat?: boolean | undefined
+    /** ANDROID_ID = 2 */
+    auth_service?: LoginRequestAuthService | undefined
+    /** Secret */
+    auth_token: string
+    /** Events recorded on the client after the last successful connection. */
+    client_event: ClientEvent[]
+    /**
+     * Format is: android-HEX_DEVICE_ID
+     * The user is the decimal value.
+     */
+    device_id?: string | undefined
+    /**
+     * string.
+     * mcs.android.com.
+     */
+    domain: string
+    heartbeat_stat?: HeartbeatStat | undefined
+    /** Must be present ( proto required ), may be empty */
+    id: string
+    /** RMQ1 - no longer used */
+    last_rmq_id?: Long | undefined
+    network_type?: number | undefined
+    /** optional int32 compress = 9; */
+    received_persistent_id: string[]
+    resource: string
+    setting: Setting[]
+    status?: Long | undefined
+    /** Must be true. */
+    use_rmq2?: boolean | undefined
+    /** Decimal android ID */
+    user: string
+  }
+
+  export enum LoginRequestAuthService {
+    ANDROID_ID = 2,
+    UNRECOGNIZED = -1
+  }
+
+  /** TAG: 3 */
+  export interface LoginResponse {
+    /** Null if login was ok. */
+    error?: ErrorInfo | undefined
+    heartbeat_config?: HeartbeatConfig | undefined
+    id: string
+    /** Not used. */
+    jid?: string | undefined
+    /** Should be "1" */
+    last_stream_id_received?: number | undefined
+    /** used by the client to synchronize with the server timestamp. */
+    server_timestamp?: Long | undefined
+    setting: Setting[]
+    stream_id?: number | undefined
+  }
+
+  export interface StreamErrorStanza {
+    text?: string | undefined
+    type: string
+  }
+
+  /** TAG: 4 */
+  export interface Close {}
+
+  export interface Extension {
+    data: Uint8Array
+    /**
+     * 12: SelectiveAck
+     * 13: StreamAck
+     */
+    id: number
+  }
+
   /**
-   * FAILED_CONNECTION - Failed connection event: the connection failed to be established or we
-   * had a login error.
+   * TAG: 7
+   * IqRequest must contain a single extension.  IqResponse may contain 0 or 1
+   * extensions.
    */
-  FAILED_CONNECTION = 2,
+  export interface IqStanza {
+    account_id?: Long | undefined
+    error?: ErrorInfo | undefined
+    /** Only field used in the 38+ protocol (besides common last_stream_id_received, status, rmq_id) */
+    extension?: Extension | undefined
+    from?: string | undefined
+    id: string
+    last_stream_id_received?: number | undefined
+    persistent_id?: string | undefined
+    rmq_id?: Long | undefined
+    status?: Long | undefined
+    stream_id?: number | undefined
+    to?: string | undefined
+    type: IqStanzaIqType
+  }
+
+  export enum IqStanzaIqType {
+    GET = 0,
+    SET = 1,
+    RESULT = 2,
+    IQ_ERROR = 3,
+    UNRECOGNIZED = -1
+  }
+
+  export interface AppData {
+    key: string
+    value: string
+  }
+
+  /** TAG: 8 */
+  export interface DataMessageStanza {
+    /** User data + GOOGLE. prefixed special entries, DMP.4 */
+    app_data: AppData[]
+    /** Package name. DMP.2 */
+    category: string
+    /**
+     * serial number of the target user, DMP.8
+     * It is the 'serial number' according to user manager.
+     */
+    device_user_id?: Long | undefined
+    /** Project ID of the sender, DMP.1 */
+    from: string
+    /** Not used. */
+    from_trusted_server?: boolean | undefined
+    /** This is the message ID, set by client, DMP.9 (message_id) */
+    id?: string | undefined
+    /**
+     * If set the server requests immediate ack. Used for important messages and
+     * for testing.
+     */
+    immediate_ack?: boolean | undefined
+    last_stream_id_received?: number | undefined
+    /**
+     * Part of the ACK protocol, returned in DataMessageResponse on server side.
+     * It's part of the key of DMP.
+     */
+    persistent_id?: string | undefined
+    /**
+     * How long has the message been queued before the flush, in seconds.
+     * This is needed to account for the time difference between server and
+     * client: server should adjust 'sent' based on its 'receive' time.
+     */
+    queued?: number | undefined
+    /** Optional field containing the binary payload of the message. */
+    raw_data?: Uint8Array | undefined
+    /** Sent by the device shortly after registration. */
+    reg_id?: string | undefined
+    /** Timestamp ( according to client ) when message was sent by app, in seconds */
+    sent?: Long | undefined
+    status?: Long | undefined
+    /**
+     * In-stream ack. Increments on each message sent - a bit redundant
+     * Not used in DMP/DMR.
+     */
+    stream_id?: number | undefined
+    /** Part of DMRequest - also the key in DataMessageProto. */
+    to?: string | undefined
+    /** The collapsed key, DMP.3 */
+    token?: string | undefined
+    /** Time to live, in seconds. */
+    ttl?: number | undefined
+  }
+
   /**
-   * SUCCESSFUL_CONNECTION - Successful connection event: information about the last successful
-   * connection, including the time at which it was established.
+   * Included in IQ with ID 13, sent from client or server after 10 unconfirmed
+   * messages.
    */
-  SUCCESSFUL_CONNECTION = 3,
-  UNRECOGNIZED = -1,
-}
+  export interface StreamAck {}
 
-/** TAG: 2 */
-export interface LoginRequest {
-  /** Must be present ( proto required ), may be empty */
-  id: string;
-  /**
-   * string.
-   * mcs.android.com.
-   */
-  domain: string;
-  /** Decimal android ID */
-  user: string;
-  resource: string;
-  /** Secret */
-  auth_token: string;
-  /**
-   * Format is: android-HEX_DEVICE_ID
-   * The user is the decimal value.
-   */
-  device_id?:
-    | string
-    | undefined;
-  /** RMQ1 - no longer used */
-  last_rmq_id?: Long | undefined;
-  setting: Setting[];
-  /** optional int32 compress = 9; */
-  received_persistent_id: string[];
-  adaptive_heartbeat?: boolean | undefined;
-  heartbeat_stat?:
-    | HeartbeatStat
-    | undefined;
-  /** Must be true. */
-  use_rmq2?: boolean | undefined;
-  account_id?:
-    | Long
-    | undefined;
-  /** ANDROID_ID = 2 */
-  auth_service?: LoginRequestAuthService | undefined;
-  network_type?: number | undefined;
-  status?:
-    | Long
-    | undefined;
-  /** Events recorded on the client after the last successful connection. */
-  client_event: ClientEvent[];
-}
-
-export enum LoginRequestAuthService {
-  ANDROID_ID = 2,
-  UNRECOGNIZED = -1,
-}
-
-/** TAG: 3 */
-export interface LoginResponse {
-  id: string;
-  /** Not used. */
-  jid?:
-    | string
-    | undefined;
-  /** Null if login was ok. */
-  error?: ErrorInfo | undefined;
-  setting: Setting[];
-  stream_id?:
-    | number
-    | undefined;
-  /** Should be "1" */
-  last_stream_id_received?: number | undefined;
-  heartbeat_config?:
-    | HeartbeatConfig
-    | undefined;
-  /** used by the client to synchronize with the server timestamp. */
-  server_timestamp?: Long | undefined;
-}
-
-export interface StreamErrorStanza {
-  type: string;
-  text?: string | undefined;
-}
-
-/** TAG: 4 */
-export interface Close {
-}
-
-export interface Extension {
-  /**
-   * 12: SelectiveAck
-   * 13: StreamAck
-   */
-  id: number;
-  data: Uint8Array;
-}
-
-/**
- * TAG: 7
- * IqRequest must contain a single extension.  IqResponse may contain 0 or 1
- * extensions.
- */
-export interface IqStanza {
-  rmq_id?: Long | undefined;
-  type: IqStanzaIqType;
-  id: string;
-  from?: string | undefined;
-  to?: string | undefined;
-  error?:
-    | ErrorInfo
-    | undefined;
-  /** Only field used in the 38+ protocol (besides common last_stream_id_received, status, rmq_id) */
-  extension?: Extension | undefined;
-  persistent_id?: string | undefined;
-  stream_id?: number | undefined;
-  last_stream_id_received?: number | undefined;
-  account_id?: Long | undefined;
-  status?: Long | undefined;
-}
-
-export enum IqStanzaIqType {
-  GET = 0,
-  SET = 1,
-  RESULT = 2,
-  IQ_ERROR = 3,
-  UNRECOGNIZED = -1,
-}
-
-export interface AppData {
-  key: string;
-  value: string;
-}
-
-/** TAG: 8 */
-export interface DataMessageStanza {
-  /** This is the message ID, set by client, DMP.9 (message_id) */
-  id?:
-    | string
-    | undefined;
-  /** Project ID of the sender, DMP.1 */
-  from: string;
-  /** Part of DMRequest - also the key in DataMessageProto. */
-  to?:
-    | string
-    | undefined;
-  /** Package name. DMP.2 */
-  category: string;
-  /** The collapsed key, DMP.3 */
-  token?:
-    | string
-    | undefined;
-  /** User data + GOOGLE. prefixed special entries, DMP.4 */
-  app_data: AppData[];
-  /** Not used. */
-  from_trusted_server?:
-    | boolean
-    | undefined;
-  /**
-   * Part of the ACK protocol, returned in DataMessageResponse on server side.
-   * It's part of the key of DMP.
-   */
-  persistent_id?:
-    | string
-    | undefined;
-  /**
-   * In-stream ack. Increments on each message sent - a bit redundant
-   * Not used in DMP/DMR.
-   */
-  stream_id?: number | undefined;
-  last_stream_id_received?:
-    | number
-    | undefined;
-  /** Sent by the device shortly after registration. */
-  reg_id?:
-    | string
-    | undefined;
-  /**
-   * serial number of the target user, DMP.8
-   * It is the 'serial number' according to user manager.
-   */
-  device_user_id?:
-    | Long
-    | undefined;
-  /** Time to live, in seconds. */
-  ttl?:
-    | number
-    | undefined;
-  /** Timestamp ( according to client ) when message was sent by app, in seconds */
-  sent?:
-    | Long
-    | undefined;
-  /**
-   * How long has the message been queued before the flush, in seconds.
-   * This is needed to account for the time difference between server and
-   * client: server should adjust 'sent' based on its 'receive' time.
-   */
-  queued?: number | undefined;
-  status?:
-    | Long
-    | undefined;
-  /** Optional field containing the binary payload of the message. */
-  raw_data?:
-    | Uint8Array
-    | undefined;
-  /**
-   * If set the server requests immediate ack. Used for important messages and
-   * for testing.
-   */
-  immediate_ack?: boolean | undefined;
-}
-
-/**
- * Included in IQ with ID 13, sent from client or server after 10 unconfirmed
- * messages.
- */
-export interface StreamAck {
-}
-
-/** Included in IQ sent after LoginResponse from server with ID 12. */
-export interface SelectiveAck {
-  id: string[];
-}
+  /** Included in IQ sent after LoginResponse from server with ID 12. */
+  export interface SelectiveAck {
+    id: string[]
+  }
 }

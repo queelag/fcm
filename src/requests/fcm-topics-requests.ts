@@ -23,7 +23,7 @@ export async function postFcmTopicsBatchAdd(
     response: FcmTopicsApiDefinitions.BatchAddResponse | FcmTopicsApiDefinitions.Error
 
   body = {
-    registration_tokens: args[0] instanceof Array ? args[0] : args,
+    registration_tokens: Array.isArray(args[0]) ? args[0] : args,
     to: topic.startsWith('/topics/') ? topic : `/topics/${topic}`
   }
 
@@ -58,7 +58,7 @@ export async function postFcmTopicsBatchRemove(
     response: FcmTopicsApiDefinitions.BatchRemoveResponse | FcmTopicsApiDefinitions.Error
 
   body = {
-    registration_tokens: args[0] instanceof Array ? args[0] : args,
+    registration_tokens: Array.isArray(args[0]) ? args[0] : args,
     to: topic.startsWith('/topics/') ? topic : `/topics/${topic}`
   }
 

@@ -1,4 +1,4 @@
-import { type ECDH, createECDH, randomBytes } from 'crypto'
+import { createECDH, type ECDH, randomBytes } from 'node:crypto'
 import { FCM_ECDH_CURVE_NAME } from '../definitions/constants.js'
 
 /**

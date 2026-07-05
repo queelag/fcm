@@ -1,0 +1,119 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
+  "assist": {
+    "enabled": true,
+    "includes": ["*", "scripts/**", "src/**", "tests/**"],
+    "actions": {
+      "source": {
+        "preset": "all",
+        "useSortedKeys": "off"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "includes": ["*", "scripts/**", "src/**", "tests/**"],
+    "attributePosition": "auto",
+    "bracketSameLine": true,
+    "bracketSpacing": true,
+    "delimiterSpacing": false,
+    "expand": "auto",
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "auto",
+    "lineWidth": 160,
+    "trailingNewline": true
+  },
+  "javascript": {
+    "formatter": {
+      "arrowParentheses": "always",
+      "jsxQuoteStyle": "single",
+      "operatorLinebreak": "after",
+      "quoteProperties": "asNeeded",
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "none"
+    }
+  },
+  "json": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "includes": ["src/**", "!!src/definitions/proto/**"],
+    "rules": {
+      "a11y": {
+        "preset": "all"
+      },
+      "complexity": {
+        "preset": "all",
+        "noExcessiveCognitiveComplexity": "off",
+        "noExcessiveLinesPerFunction": "off",
+        "useMaxParams": "off"
+      },
+      "correctness": {
+        "preset": "all",
+        "noNodejsModules": "off",
+        "noProcessGlobal": "off",
+        "noVoidTypeReturn": "off",
+        "useImportExtensions": "off",
+        "useSingleJsDocAsterisk": "off"
+      },
+      "nursery": {
+        "preset": "all"
+      },
+      "performance": {
+        "preset": "all",
+        "noBarrelFile": "off",
+        "noDelete": "off",
+        "noReExportAll": "off"
+      },
+      "security": {
+        "preset": "all",
+        "noSecrets": {
+          "level": "info",
+          "options": {
+            "entropyThreshold": 42
+          }
+        }
+      },
+      "style": {
+        "preset": "all",
+        "noContinue": "off",
+        "noEnum": "off",
+        "noExcessiveClassesPerFile": "off",
+        "noExcessiveLinesPerFile": "off",
+        "noIncrementDecrement": "off",
+        "noInferrableTypes": "off",
+        "noMagicNumbers": "off",
+        "noNamespace": "off",
+        "noProcessEnv": "off",
+        "noTernary": "off",
+        "noUnusedTemplateLiteral": "off",
+        "useBlockStatements": "off",
+        "useConst": "off",
+        "useDestructuring": "off",
+        "useExportsLast": "off",
+        "useNamingConvention": "off",
+        "useSingleVarDeclarator": "off",
+        "useTemplate": "off",
+        "useUnifiedTypeSignatures": "off"
+      },
+      "suspicious": {
+        "preset": "all",
+        "noConfusingVoidType": "off",
+        "noConsole": "off",
+        "noExplicitAny": "off",
+        "useAwait": "off"
+      }
+    }
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "defaultBranch": "master",
+    "useIgnoreFile": true
+  }
+}

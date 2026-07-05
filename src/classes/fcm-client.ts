@@ -1,18 +1,19 @@
+import { createECDH, type ECDH } from 'node:crypto'
+import { type ConnectionOptions, connect, type TLSSocket } from 'node:tls'
 import {
+  clearTimeout,
   DeferredPromise,
+  decodeText,
   EventEmitter,
+  encodeBase64,
   type FetchError,
   MemoryStorage,
   type Storage,
-  clearTimeout,
-  decodeText,
-  encodeBase64,
   setTimeout,
   tc
 } from '@aracna/core'
-import { type ECDH, createECDH } from 'crypto'
+// biome-ignore lint/correctness/noUnresolvedImports: not unresolved
 import { decrypt } from 'http_ece'
-import { type ConnectionOptions, type TLSSocket, connect } from 'tls'
 import {
   ACG_REGISTER_CHROME_VERSION,
   DEFAULT_FCM_CLIENT_ACG,
@@ -199,7 +200,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     encoded = MCSProto.LoginRequest.encodeDelimited(request).finish()
     ClassLogger.verbose('FcmClient', 'onSocketReady', 'The login request has been encoded', encoded)
 
-    buffer = Buffer.from([MCS_VERSION, McsTag.LOGIN_REQUEST, ...encoded])
+    buffer = Buffer.from([MCS_VERSION, McsTag.LoginRequest, ...encoded])
     ClassLogger.verbose('FcmClient', 'onSocketReady', 'The login request buffer is ready.', buffer)
 
     this.data = DEFAULT_FCM_CLIENT_DATA()
@@ -225,7 +226,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     encoded = MCSProto.HeartbeatPing.encodeDelimited(ping).finish()
     ClassLogger.verbose('FcmClient', 'onHeartbeat', 'The heartbeat ping has been encoded.', encoded)
 
-    buffer = Buffer.from([McsTag.HEARTBEAT_PING, ...encoded])
+    buffer = Buffer.from([McsTag.HeartbeatPing, ...encoded])
     ClassLogger.verbose('FcmClient', 'onHeartbeat', 'The heartbeat ping buffer is ready', buffer)
 
     this.socket?.write(buffer)
@@ -238,7 +239,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
   protected prepareForNextMessage(): void {
     this.data.cursor = 0
     this.data.size.packets = MCS_SIZE_PACKET_MIN_LENGTH
-    this.data.state = McsState.TAG_AND_SIZE
+    this.data.state = McsState.TagAndSize
     this.data.value = Buffer.alloc(0)
   }
 
@@ -272,7 +273,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     ClassLogger.verbose('FcmClient', 'onSocketData', data, this.data.value, [data.length, this.data.value.length])
 
     switch (this.data.state) {
-      case McsState.VERSION_TAG_AND_SIZE:
+      case McsState.VersionTagAndSize:
         if (this.data.value.length < MCS_VERSION_PACKET_LENGTH + MCS_TAG_PACKET_LENGTH + MCS_SIZE_PACKET_MIN_LENGTH) {
           return
         }
@@ -282,7 +283,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         this.onSocketDataSize()
 
         break
-      case McsState.TAG_AND_SIZE:
+      case McsState.TagAndSize:
         if (this.data.value.length < MCS_TAG_PACKET_LENGTH + MCS_SIZE_PACKET_MIN_LENGTH) {
           return
         }
@@ -291,10 +292,10 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         this.onSocketDataSize()
 
         break
-      case McsState.SIZE:
+      case McsState.Size:
         this.onSocketDataSize()
         break
-      case McsState.BYTES:
+      case McsState.Bytes:
         this.onSocketDataBytes()
         break
       default:
@@ -323,7 +324,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     this.data.cursor++
     ClassLogger.verbose('FcmClient', 'onSocketDataVersion', `Increasing the cursor by 1.`, [this.data.cursor])
 
-    this.data.state = McsState.TAG_AND_SIZE
+    this.data.state = McsState.TagAndSize
     ClassLogger.info('FcmClient', 'onSocketDataVersion', `Setting state to TAG_AND_SIZE.`, [this.data.state])
   }
 
@@ -340,7 +341,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     this.data.cursor++
     ClassLogger.verbose('FcmClient', 'onSocketDataTag', `Increasing the cursor by 1.`, [this.data.cursor])
 
-    this.data.state = McsState.SIZE
+    this.data.state = McsState.Size
     ClassLogger.info('FcmClient', 'onSocketDataTag', `Setting state to SIZE.`, [this.data.state])
   }
 
@@ -370,10 +371,10 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     }
 
     switch (this.data.tag) {
-      case McsTag.CLOSE:
+      case McsTag.Close:
         decodable = tc(() => MCSProto.Close.verify(MCSProto.Close.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))), false)
         break
-      case McsTag.DATA_MESSAGE_STANZA:
+      case McsTag.DataMessageStanza:
         decodable = tc(
           () => MCSProto.DataMessageStanza.verify(MCSProto.DataMessageStanza.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))),
           false
@@ -397,16 +398,16 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         }, false)
 
         break
-      case McsTag.HEARTBEAT_ACK:
+      case McsTag.HeartbeatAck:
         decodable = tc(
           () => MCSProto.HeartbeatAck.verify(MCSProto.HeartbeatAck.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))),
           false
         )
         break
-      case McsTag.IQ_STANZA:
+      case McsTag.IqStanza:
         decodable = tc(() => MCSProto.IqStanza.verify(MCSProto.IqStanza.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))), false)
         break
-      case McsTag.LOGIN_RESPONSE:
+      case McsTag.LoginResponse:
         decodable = tc(
           () => MCSProto.LoginResponse.verify(MCSProto.LoginResponse.decode(this.data.value.subarray(this.data.cursor + this.data.size.packets))),
           false
@@ -437,7 +438,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
     this.data.cursor += this.data.size.packets
     ClassLogger.verbose('FcmClient', 'onSocketDataSize', `Increasing the cursor by ${this.data.size.packets}.`, [this.data.cursor])
 
-    this.data.state = McsState.BYTES
+    this.data.state = McsState.Bytes
     ClassLogger.info('FcmClient', 'onSocketDataSize', `Setting state to BYTES.`, [this.data.state])
 
     this.onSocketDataBytes()
@@ -479,7 +480,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
    */
   protected onSocketDataBytes = (): void => {
     switch (this.data.tag) {
-      case McsTag.CLOSE: {
+      case McsTag.Close: {
         let close: McsDefinitions.Close
 
         close = decodeProtoType(MCSProto.Close, this.data.value.subarray(this.data.cursor))
@@ -490,7 +491,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
 
         break
       }
-      case McsTag.DATA_MESSAGE_STANZA: {
+      case McsTag.DataMessageStanza: {
         let message: McsDefinitions.DataMessageStanza, ecdh: ECDH, decrypted: Buffer, data: FcmClientMessageData
 
         message = decodeProtoType(MCSProto.DataMessageStanza, this.data.value.subarray(this.data.cursor))
@@ -513,9 +514,9 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         if (message.raw_data) {
           decrypted = decrypt(Buffer.from(message.raw_data), {
             authSecret: encodeBase64(this.ece.authSecret),
-            dh: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'crypto-key')?.value.slice(3),
+            dh: message.app_data.find(({ key }: McsDefinitions.AppData) => key === 'crypto-key')?.value.slice(3),
             privateKey: ecdh,
-            salt: message.app_data.find((data: McsDefinitions.AppData) => data.key === 'encryption')?.value.slice(5),
+            salt: message.app_data.find(({ key }: McsDefinitions.AppData) => key === 'encryption')?.value.slice(5),
             version: 'aesgcm'
           })
           ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'DATA_MESSAGE_STANZA', `The message data has been decrypted.`, decrypted)
@@ -529,7 +530,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
 
         break
       }
-      case McsTag.HEARTBEAT_ACK: {
+      case McsTag.HeartbeatAck: {
         let heartbeat: McsDefinitions.HeartbeatAck
 
         heartbeat = decodeProtoType(MCSProto.HeartbeatAck, this.data.value.subarray(this.data.cursor))
@@ -541,11 +542,11 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
         this.data.heartbeat = heartbeat
         ClassLogger.verbose('FcmClient', 'onSocketDataBytes', 'HEARTBEAT_ACK', `The heartbeat ack has been set inside data.`)
 
-        setTimeout(this.heartbeat.bind(this), this.options.heartbeat?.frequency)
+        setTimeout(this.heartbeat.bind(this), this.options.heartbeat.frequency)
 
         break
       }
-      case McsTag.IQ_STANZA: {
+      case McsTag.IqStanza: {
         let iq: McsDefinitions.IqStanza
 
         iq = decodeProtoType(MCSProto.IqStanza, this.data.value.subarray(this.data.cursor))
@@ -556,7 +557,7 @@ export class FcmClient extends EventEmitter<FcmClientEvents> {
 
         break
       }
-      case McsTag.LOGIN_RESPONSE: {
+      case McsTag.LoginResponse: {
         let login: McsDefinitions.LoginResponse
 
         login = decodeProtoType(MCSProto.LoginResponse, this.data.value.subarray(this.data.cursor))

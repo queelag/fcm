@@ -1,4 +1,4 @@
-import { FetchError, FetchResponse, encodeBase64URL, parseBigInt, serializeURLSearchParams, sleep } from '@aracna/core'
+import { encodeBase64URL, FetchError, FetchResponse, parseBigInt, serializeURLSearchParams, sleep } from '@aracna/core'
 import { AcgAPI } from '../apis/acg-api.js'
 import type { AcgApiDefinitions } from '../definitions/apis/acg-api-definitions.js'
 import {

@@ -1,4 +1,4 @@
-import protobuf, { Root } from 'protobufjs'
+import { Root } from 'protobufjs'
 import { McsState, McsTag } from './enums.js'
 import type { FcmClientACG, FcmClientData, FcmClientECE } from './interfaces.js'
 
@@ -61,22 +61,23 @@ export const DEFAULT_FCM_CLIENT_DATA: () => FcmClientData = () => ({
   cursor: 0,
   received: { pids: [] },
   size: { packets: MCS_SIZE_PACKET_MIN_LENGTH },
-  state: McsState.VERSION_TAG_AND_SIZE,
-  tag: McsTag.LOGIN_RESPONSE,
+  state: McsState.VersionTagAndSize,
+  tag: McsTag.LoginResponse,
   value: Buffer.alloc(0),
   version: 0
 })
-export const DEFAULT_FCM_CLIENT_HEARTBEAT_FREQUENCY: number = 10000 * 60
+export const DEFAULT_FCM_CLIENT_HEARTBEAT_FREQUENCY: number = 10_000 * 60
 export const DEFAULT_FCM_CLIENT_STORAGE_KEY: string = 'aracna_fcm_client'
 
 /**
  * PROTOBUF
  */
 /** */
-export const PROTOBUF_ROOT: Root = new protobuf.Root()
+export const PROTOBUF_ROOT: Root = new Root()
 
 /**
  * VAPID
  */
 /** */
+// biome-ignore lint/security/noSecrets: not a secret
 export const DEFAULT_VAPID_KEY = 'BDOU99-h67HcA6JeFXHbSNMu7e2yNNu3RzoMj8TM4W88jITfq7ZmPvIM1Iv-4_l2LxQcYwhqby2xGpWwzjfAnG4'

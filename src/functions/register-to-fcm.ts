@@ -1,4 +1,4 @@
-import { type FetchError } from '@aracna/core'
+import type { FetchError } from '@aracna/core'
 import type { FcmRegistrationsApiDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'
 import type { FirebaseInstallationsApiDefinitions } from '../definitions/apis/firebase-installations-api-definitions.js'
 import type { AcgCheckinResponse, FcmRegistration, RegisterToFcmConfig, RegisterToFcmOptions } from '../definitions/interfaces.js'

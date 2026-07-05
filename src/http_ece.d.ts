@@ -15,7 +15,8 @@
 
 // type KeyLookupCallback = (keyid: string) => any
 
+// biome-ignore lint/correctness/noUnresolvedImports: ok
 declare module 'http_ece' {
-  function decrypt(buffer: Buffer, params: object, keyLookupCallback?: Function): Buffer
-  function encrypt(buffer: Buffer, params: object, keyLookupCallback?: Function): Buffer
+  function decrypt(buffer: Buffer, params: object, keyLookupCallback?: CallableFunction): Buffer
+  function encrypt(buffer: Buffer, params: object, keyLookupCallback?: CallableFunction): Buffer
 }

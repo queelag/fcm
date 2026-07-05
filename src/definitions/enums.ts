@@ -6,34 +6,34 @@ export const FcmApiAndroidNotificationPriority: typeof FcmApiDefinitions.V1.Noti
 export const FcmApiAndroidVisibility: typeof FcmApiDefinitions.V1.Visibility = FcmApiDefinitions.V1.Visibility
 
 export enum LoggerName {
-  CLASS = 'FCM_CLASS',
-  FUNCTION = 'FCM_FUNCTION',
-  REQUEST = 'FCM_REQUEST'
+  Class = 'FCM_CLASS',
+  Function = 'FCM_FUNCTION',
+  Request = 'FCM_REQUEST'
 }
 
 export enum McsState {
-  VERSION_TAG_AND_SIZE = 0,
-  TAG_AND_SIZE = 1,
-  SIZE = 2,
-  BYTES = 3
+  VersionTagAndSize = 0,
+  TagAndSize = 1,
+  Size = 2,
+  Bytes = 3
 }
 
 export enum McsTag {
-  HEARTBEAT_PING = 0,
-  HEARTBEAT_ACK = 1,
-  LOGIN_REQUEST = 2,
-  LOGIN_RESPONSE = 3,
-  CLOSE = 4,
-  //   MESSAGE_STANZA,
-  //   PRESENCE_STANZA,
-  IQ_STANZA = 7,
-  DATA_MESSAGE_STANZA = 8
-  //   BATCH_PRESENCE_STANZA,
-  //   STREAM_ERROR_STANZA,
-  //   HTTP_REQUEST,
-  //   HTTP_RESPONSE,
-  //   BIND_ACCOUNT_REQUEST,
-  //   BIND_ACCOUNT_RESPONSE,
-  //   TALK_METADATA,
-  //   NUM_PROTO_TYPES
+  HeartbeatPing = 0,
+  HeartbeatAck = 1,
+  LoginRequest = 2,
+  LoginResponse = 3,
+  Close = 4,
+  //   MessageStanza,
+  //   PresenceStanza,
+  IqStanza = 7,
+  DataMessageStanza = 8
+  //   BatchPresenceStanza,
+  //   StreamErrorStanza,
+  //   HttpRequest,
+  //   HttpResponse,
+  //   BindAccountRequest,
+  //   BindAccountResponse,
+  //   TalkMetadata,
+  //   NumProtoTypes
 }

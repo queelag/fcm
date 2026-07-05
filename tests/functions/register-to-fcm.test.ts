@@ -1,6 +1,6 @@
 import { ECDH } from 'crypto'
 import { describe, expect, it } from 'vitest'
-import { FcmRegistration, createFcmECDH, generateFcmAuthSecret, registerToFCM } from '../../src'
+import { createFcmECDH, FcmRegistration, generateFcmAuthSecret, registerToFCM } from '../../src'
 import {
   ACG_ID,
   ACG_SECURITY_TOKEN,

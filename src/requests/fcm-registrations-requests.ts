@@ -1,4 +1,4 @@
-import { type FetchError, concatURL, encodeBase64URL } from '@aracna/core'
+import { concatURL, encodeBase64URL, type FetchError } from '@aracna/core'
 import { FcmAPI } from '../apis/fcm-api.js'
 import { FcmRegistrationsAPI } from '../apis/fcm-registrations-api.js'
 import type { FcmRegistrationsApiDefinitions } from '../definitions/apis/fcm-registrations-api-definitions.js'

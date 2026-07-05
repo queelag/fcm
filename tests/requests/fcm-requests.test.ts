@@ -1,9 +1,9 @@
+import { ECDH } from 'crypto'
 import { describe, expect, it } from 'vitest'
+import { createFcmECDH, FcmRegistration, generateFcmAuthSecret, registerToFCM } from '../../src'
 import { FcmApiDefinitions } from '../../src/definitions/apis/fcm-api-definitions'
 import { postFcmSendV1 } from '../../src/requests/fcm-requests'
 import { APP_ID, FCM_TOKEN, FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_PROJECT_ID, GOOGLE_SERVICE_ACCOUNT, VAPID_KEY } from '../definitions/constants'
-import { ECDH } from 'crypto'
-import { FcmRegistration, generateFcmAuthSecret, createFcmECDH, registerToFCM } from '../../src'
 
 describe('FCM Requests', () => {
   it.skip('sends a message', async () => {

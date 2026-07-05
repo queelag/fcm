@@ -1,5 +1,5 @@
+import { randomBytes } from 'node:crypto'
 import { encodeBase64URL } from '@aracna/core'
-import { randomBytes } from 'crypto'
 
 export function generateFirebaseFID() {
   let fid: Buffer
@@ -9,7 +9,7 @@ export function generateFirebaseFID() {
   fid = randomBytes(17)
 
   // Replace the first 4 random bits with the constant FID header of 0b0111.
-  fid[0] = 0b01110000 + (fid[0] % 0b00010000)
+  fid[0] = 0b0111_0000 + (fid[0] % 0b0001_0000)
 
   return encodeBase64URL(fid, { pad: false })
 }
