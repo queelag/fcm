@@ -63,7 +63,7 @@ describe('FcmClient', () => {
     client.on('close', () => promise.resolve())
 
     await client.connect()
-    client.getSocket()?.write(Buffer.from([McsTag.CLOSE]))
+    client.getSocket()?.write(Buffer.from([McsTag.Close]))
     await promise.instance
 
     expect(promise.state).toBe('fulfilled')
