@@ -2,6 +2,7 @@ import { getSnakeCaseString } from '@aracna/core'
 import { execSync } from 'child_process'
 import { readFile, rm, writeFile } from 'fs/promises'
 import { glob } from 'glob'
+import { basename } from 'path'
 
 export async function generateProtoTS() {
   execSync(
@@ -15,7 +16,7 @@ export async function generateProtoTS() {
   for (let path of await glob('src/assets/*.json')) {
     let name, json, ts
 
-    name = getSnakeCaseString(path.replace('src/assets/', '').replace('.json', ''))
+    name = getSnakeCaseString(basename(path, '.json'))
     json = JSON.parse(await readFile(path, 'utf8'), (key, value) => (key === 'edition' ? undefined : value))
 
     ts = [`import type { INamespace } from 'protobufjs'`, ``, `export const ${name.toUpperCase()}_PROTO_JSON: INamespace = ${JSON.stringify(json)}`].join('\n')

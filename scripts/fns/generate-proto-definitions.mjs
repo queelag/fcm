@@ -2,15 +2,21 @@ import { getPascalCaseString, getSnakeCaseString } from '@aracna/core'
 import { execSync } from 'child_process'
 import { mkdir, readFile, rm, writeFile } from 'fs/promises'
 import { glob } from 'glob'
+import { platform } from 'os'
+import { basename } from 'path'
 
 export async function generateProtoDefinitions() {
+  let plugin
+
   await rm('src/definitions/proto', { force: true, recursive: true })
   await mkdir('src/definitions/proto', { recursive: true })
+
+  plugin = platform() === 'win32' ? 'protoc-gen-ts_proto.cmd' : 'protoc-gen-ts_proto'
 
   execSync(
     [
       `protoc`,
-      `--plugin=node_modules/.bin/protoc-gen-ts_proto`,
+      `--plugin=node_modules/.bin/${plugin}`,
       `--ts_proto_opt=forceLong=long`,
       `--ts_proto_opt=esModuleInterop=true`,
       `--ts_proto_opt=importSuffix=.js`,
@@ -25,7 +31,7 @@ export async function generateProtoDefinitions() {
   for (let path of await glob('src/definitions/proto/*.ts')) {
     let name, ts
 
-    name = getSnakeCaseString(path.replace('src/definitions/proto/', '').replace('.ts', ''))
+    name = getSnakeCaseString(basename(path, '.ts'))
     ts = await readFile(path, 'utf8')
 
     if (name === 'checkin') {
